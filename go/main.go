@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	callpython "goHalf/callPython"
+
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -41,6 +43,8 @@ func main() {
 			case event.Op&fsnotify.Chmod == fsnotify.Chmod:
 				log.Printf("File permissions changed: %s\n", event.Name)
 			}
+
+			callpython.CallPython(dirToWatch+"/test.py", make([]string, 0))
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
