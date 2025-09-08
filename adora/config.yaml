@@ -1,0 +1,110 @@
+# === RAG CONFIGURATION FILE ===
+
+# ----------------------------
+# MODEL CONFIGURATION
+# ----------------------------
+llm:
+  provider: "gemini"  # Options: openai, ollama, huggingface, gemini
+  model_name: "gemini-2.0-flash"  # Example: gpt-3.5-turbo, llama3, mistral, gemini-pro, etc.
+  temperature: 0.7
+  max_tokens: 1024
+
+  # Only needed if provider is openai or gemini, the value is the key in the .env file *not* the actual key
+  api_keys:
+    openai_api_key: API_KEY
+    gemini_api_key: API_KEY
+
+  # Only needed if provider is huggingface
+  huggingface_api_token: HF_TOKEN
+
+  # Only needed if provider is ollama
+  ollama_host: "http://localhost:11434"  # Default local Ollama server
+
+# ----------------------------
+# EMBEDDING CONFIGURATION
+# ----------------------------
+embedding:
+  provider: "huggingface"  # huggingface, openai, etc.
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  dimensions: 384
+  normalize: true
+
+# ----------------------------
+# VECTOR STORE CONFIGURATION
+# ----------------------------
+vector_store:
+  type: "faiss"  # Options: faiss, chroma, qdrant, pinecone, weaviate
+  persist_path: "./vector_db"
+  similarity_metric: "cosine"
+  top_k: 5
+
+# ----------------------------
+# DOCUMENT CHUNKING CONFIGURATION
+# ----------------------------
+chunking:
+  chunk_size: 500
+  chunk_overlap: 50
+  splitter: "recursive"  # Options: recursive, sentence, paragraph
+
+# ----------------------------
+# RERANKING (Optional)
+# ----------------------------
+reranking:
+  enabled: false
+  model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  top_k: 3
+
+# ----------------------------
+# HALLUCINATION CHECKER CONFIGURATION
+# ----------------------------
+hallucination_checker:
+  enabled: true
+  same_as_retriever: false
+  method: "fact_checking"  # Options: embedding_similarity, fact_checking, citation_matching
+
+  # For embedding similarity (e.g., cosine distance between answer and source)
+  threshold: 0.7
+
+  # If using LLM for fact-checking
+  provider: "gemini"  # Options: openai, ollama, huggingface, gemini
+  model_name: "gemini-2.0-flash"  # Example: gpt-3.5-turbo, llama3, mistral, gemini-pro, etc.
+  temperature: 0.7
+  max_tokens: 1024
+
+  # Only needed if provider is openai or gemini, the value is the key in the .env file *not* the actual key
+  api_keys:
+    openai_api_key: API_KEY
+    gemini_api_key: API_KEY
+
+  # Only needed if provider is huggingface
+  huggingface_api_token: HF_TOKEN
+
+  # Only needed if provider is ollama
+  ollama_host: "http://localhost:11434"  # Default local Ollama server
+
+  prompt_template: |
+    Given the following context and answer, check if the answer is grounded in the context. Reply only "Yes" or "No".
+    
+    CONTEXT:
+    {context}
+
+    ANSWER:
+    {answer}
+
+    Is the answer grounded in the context?
+
+# ----------------------------
+# LOGGING / MONITORING
+# ----------------------------
+logging:
+  level: "info"  # debug, info, warning, error
+  log_to_file: true
+  log_file_path: "./rag_logs.log"
+
+# ----------------------------
+# OTHER SETTINGS
+# ----------------------------
+rag_mode: "stuff"  # Options: stuff, map_reduce, refine (LangChain modes)
+streaming: false
+use_cache: true
+debug: false
