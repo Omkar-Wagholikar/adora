@@ -1,22 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os/exec"
 
 	"github.com/fsnotify/fsnotify"
 )
-
-func callPython(path string) {
-	cmd := exec.Command("python3", "handler.py", path)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error calling Python: %v\nOutput: %s", err, output)
-	} else {
-		log.Printf("Python output: %s", output)
-	}
-}
 
 func main() {
 	watcher, err := fsnotify.NewWatcher()
@@ -25,7 +13,7 @@ func main() {
 	}
 	defer watcher.Close()
 
-	dirToWatch := "./watched"
+	dirToWatch := "/home/omkar/rag_check/watched"
 
 	err = watcher.Add(dirToWatch)
 	if err != nil {
@@ -40,11 +28,19 @@ func main() {
 			if !ok {
 				return
 			}
-			log.Println("Event:", event)
-			fmt.Println(event.Name)
-			// if event.Op&(fsnotify.Create|fsnotify.Write|fsnotify.Remove) != 0 {
-			//     callPython(event.Name)
-			// }
+
+			switch {
+			case event.Op&fsnotify.Create == fsnotify.Create:
+				log.Printf("File created: %s\n", event.Name)
+			case event.Op&fsnotify.Write == fsnotify.Write:
+				log.Printf("File modified: %s\n", event.Name)
+			case event.Op&fsnotify.Remove == fsnotify.Remove:
+				log.Printf("File deleted: %s\n", event.Name)
+			case event.Op&fsnotify.Rename == fsnotify.Rename:
+				log.Printf("File renamed: %s\n", event.Name)
+			case event.Op&fsnotify.Chmod == fsnotify.Chmod:
+				log.Printf("File permissions changed: %s\n", event.Name)
+			}
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
