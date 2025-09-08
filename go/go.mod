@@ -1,4 +1,4 @@
-module main
+module goHalf
 
 go 1.25.1
 
