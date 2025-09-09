@@ -10,6 +10,7 @@ from langchain_community.document_loaders import PDFPlumberLoader
 
 from adora.config_parser.data_types import RAGConfig
 from adora.factories.llm.llmFactory import LLMFactory
+from adora.factories.embedding.embeddingFactory import EmbeddingFactory
 
 def get_docs(path: str):
     loader = PDFPlumberLoader(path)
@@ -19,8 +20,9 @@ def get_docs(path: str):
     return documents
 
 def build_qa_system(config: RAGConfig, documents: list):
-    # Create embedding + vectorstore
-    embedder = HuggingFaceEmbeddings()
+    embedder = EmbeddingFactory.create(config=config.embedding).create()
+    
+    # Create vectorstore
     vector = FAISS.from_documents(documents, embedder)
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
 
