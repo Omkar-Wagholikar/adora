@@ -36,6 +36,7 @@ vector_store:
   persist_path: "./vector_db"
   similarity_metric: "cosine"
   top_k: 5
+  allow_dangerous_deserialization: true
 
 # ----------------------------
 # DOCUMENT CHUNKING CONFIGURATION

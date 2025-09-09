@@ -12,7 +12,7 @@ from typing import Optional
 from ..config_parser.data_types import RAGConfig
 from ..factories.llm.llmFactory import LLMFactory
 from ..factories.embedding.embeddingFactory import EmbeddingFactory
-from ..factories.vectorStore.VectorStoreFactory import VectorStoreFactory
+from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
 
 def get_docs(path: str):
     loader = PDFPlumberLoader(path)

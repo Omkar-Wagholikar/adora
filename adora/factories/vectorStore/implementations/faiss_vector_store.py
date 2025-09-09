@@ -15,7 +15,7 @@ class FaissVectorStore(BaseVectorStore):
     def create(self, embedder, documents=None, save_if_not_local=False):
         if documents:
             store = FAISS.from_documents(documents, embedder)
-            self.logger.info("VectorStore: Documents provided to the vector store, using them instead of local")
+            self.logger.info("FaissVectorStore: Documents provided to the vector store, using them instead of local")
             if save_if_not_local and self.config.persist_path:
                 self.logger.info("Saving data to disk")
                 os.makedirs(self.config.persist_path, exist_ok=True)
@@ -24,6 +24,6 @@ class FaissVectorStore(BaseVectorStore):
 
             return store
         else:
-            self.logger.info("VectorStore: Documents not provided, reading from disk")
+            self.logger.info("FaissVectorStore: Documents not provided, reading from disk")
             self.logger.info(f"Current configs: {self.config.persist_path}, embedder_type: {type(embedder)}, allow_dangerous_deserialization: {self.config.allow_dangerous_deserialization}")
             return FAISS.load_local(self.config.persist_path, embedder, allow_dangerous_deserialization=self.config.allow_dangerous_deserialization)
