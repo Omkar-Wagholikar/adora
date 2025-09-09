@@ -6,6 +6,8 @@
 
 .env
 
+rag_config.yaml
+testFiles/
 
 # Packages
 *.egg
