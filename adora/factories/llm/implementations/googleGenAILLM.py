@@ -1,6 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from factories.baseclasses.basellm import BaseLLM
+from adora.factories.baseclasses.basellm import BaseLLM
 
 
 class GoogleGenAILLM(BaseLLM):
@@ -11,5 +11,5 @@ class GoogleGenAILLM(BaseLLM):
         return ChatGoogleGenerativeAI(
             model=self.config.model_name,
             temperature=self.config.temperature,
-            google_api_key=self.config.api_keys.get("google"),
+            google_api_key=self.config.api_keys.get("gemini_api_key"),
         )
