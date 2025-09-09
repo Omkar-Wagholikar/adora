@@ -6,7 +6,6 @@ from .config_parser.parser import load_config
 from .factories.llm.llmFactory import LLMFactory
 from .pipeline.assembler import get_docs, build_qa_system
 from .utils.logging_setup import setup_logging
-
  
 if __name__ == "__main__":
     print("Running Adora...")

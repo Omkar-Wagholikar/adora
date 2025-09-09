@@ -8,6 +8,7 @@
 
 rag_config.yaml
 testFiles/
+rag_logs.log
 
 # Packages
 *.egg
