@@ -6,16 +6,20 @@ from .config_parser.parser import load_config
 from .factories.llm.llmFactory import LLMFactory
 from .pipeline.assembler import get_docs, build_qa_system
 from .utils.logging_setup import setup_logging
- 
+
+# clear && python -m adora.main
+
 if __name__ == "__main__":
-    print("Running Adora...")
+    logger = logging.getLogger("Adora")
     CONFIG_PATH = Path(__file__).parent / "rag_config.yaml"
     config: RAGConfig = load_config(CONFIG_PATH)
     setup_logging(config.logging)
-    logger = logging.getLogger("Adora")
+    
+    logger.info("Running Adora...")
     
     logger.info("Getting docs")
-    docs = get_docs("/home/omkar/rag_check/adora/testFiles/test1.pdf")
+    docs = None
+    # docs = get_docs("/home/omkar/rag_check/adora/testFiles/test1.pdf")
     
     logger.info("setting up pipeline")    
     qa = build_qa_system(config=config, documents=docs)

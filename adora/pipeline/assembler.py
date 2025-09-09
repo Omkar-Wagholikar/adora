@@ -7,10 +7,11 @@ from langchain_community.vectorstores import FAISS
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PDFPlumberLoader
+from typing import Optional
 
-from adora.config_parser.data_types import RAGConfig
-from adora.factories.llm.llmFactory import LLMFactory
-from adora.factories.embedding.embeddingFactory import EmbeddingFactory
+from ..config_parser.data_types import RAGConfig
+from ..factories.llm.llmFactory import LLMFactory
+from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.VectorStoreFactory import VectorStoreFactory
 
 def get_docs(path: str):
@@ -20,13 +21,13 @@ def get_docs(path: str):
     documents = text_splitter.split_documents(docs)
     return documents
 
-def build_qa_system(config: RAGConfig, documents: list):
+def build_qa_system(config: RAGConfig, documents: Optional[list]):
     embedder = EmbeddingFactory.create(config=config.embedding).create()
     
     # Create vectorstore
     # vector = FAISS.from_documents(documents, embedder)
     # retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
-    vector = VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=documents)
+    vector = VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=documents, save_if_not_local=True)
     retriever = vector.as_retriever()
 
     # Create LLM

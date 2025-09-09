@@ -24,6 +24,7 @@ class VectorStoreConfig(BaseModel):
     persist_path: str
     similarity_metric: str
     top_k: int
+    allow_dangerous_deserialization: Optional[bool] = False
 
 
 class ChunkingConfig(BaseModel):
