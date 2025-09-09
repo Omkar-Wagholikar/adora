@@ -25,6 +25,7 @@ class VectorStoreConfig(BaseModel):
     similarity_metric: str
     top_k: int
     allow_dangerous_deserialization: Optional[bool] = False
+    save_if_not_local: Optional[bool] = False
 
 
 class ChunkingConfig(BaseModel):

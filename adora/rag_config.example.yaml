@@ -37,7 +37,7 @@ vector_store:
   similarity_metric: "cosine"
   top_k: 5
   allow_dangerous_deserialization: true
-
+  save_if_not_local: false
 # ----------------------------
 # DOCUMENT CHUNKING CONFIGURATION
 # ----------------------------
