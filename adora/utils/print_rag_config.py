@@ -1,7 +1,7 @@
-from .data_types import RAGConfig
+from adora.config_parser.data_types import RAGConfig
 
 
-def print_config(config: RAGConfig):
+def print_rag_config(config: RAGConfig):
     print("=" * 10, "LLM", "=" * 10)
     print(f"\tprovider: {config.llm.provider}")
     print(f"\tmodel_name: {config.llm.model_name}")
