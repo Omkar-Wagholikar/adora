@@ -17,10 +17,12 @@ from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
 def get_docs(path: str):
     loader = PDFPlumberLoader(path)
     docs = loader.load()
+    for d in docs:
+        if "source" not in d.metadata:
+            d.metadata["source"] = path
     text_splitter = SemanticChunker(HuggingFaceEmbeddings())
     documents = text_splitter.split_documents(docs)
     return documents
-
 def build_qa_system(config: RAGConfig, documents: Optional[list]):
     embedder = EmbeddingFactory.create(config=config.embedding).create()
     

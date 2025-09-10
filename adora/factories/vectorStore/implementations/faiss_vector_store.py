@@ -24,10 +24,14 @@ class FaissVectorStore(BaseVectorStore):
                 )
                 self.logger.info("FaissVectorStore: Loaded existing vector store from disk")
             except Exception as e:
-                dummy_doc = Document(page_content="dummy", metadata={})
-                store = FAISS.from_documents([dummy_doc], embedder)
+                dummy_doc = Document(page_content="dummy", metadata={"source": "dummy"})
+                store = FAISS.from_documents([dummy_doc], embedder, )
                 self.logger.info(f"FaissVectorStore: No existing store found, creating new one. Reason: {e}")
 
+            for d in documents:
+                if "source" not in d.metadata:
+                    d.metadata["source"] = "unknown"
+                    
             # Add new docs
             store.add_documents(documents)
             self.logger.info("FaissVectorStore: Added new documents to existing store")
