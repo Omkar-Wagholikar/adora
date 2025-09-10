@@ -44,7 +44,7 @@ func main() {
 				log.Printf("File permissions changed: %s\n", event.Name)
 			}
 
-			callpython.CallPython(dirToWatch+"/test.py", make([]string, 0))
+			callpython.PerformFileOp(event.Op.String(), event.Name)
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
