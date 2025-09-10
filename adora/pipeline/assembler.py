@@ -14,6 +14,9 @@ from ..factories.llm.llmFactory import LLMFactory
 from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 def get_docs(path: str):
     loader = PDFPlumberLoader(path)
     docs = loader.load()
