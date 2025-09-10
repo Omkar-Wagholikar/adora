@@ -2,6 +2,7 @@ import os
 import logging
 
 from langchain_community.vectorstores import FAISS
+from langchain.docstore.document import Document
 
 from ....config_parser.data_types import VectorStoreConfig
 from ...baseclasses.basevectorstore import BaseVectorStore
@@ -23,8 +24,9 @@ class FaissVectorStore(BaseVectorStore):
                 )
                 self.logger.info("FaissVectorStore: Loaded existing vector store from disk")
             except Exception as e:
-                self.logger.info(f"No existing store found, creating new one. Reason: {e}")
-                store = FAISS.from_documents([], embedder)
+                dummy_doc = Document(page_content="dummy", metadata={})
+                store = FAISS.from_documents([dummy_doc], embedder)
+                self.logger.info(f"FaissVectorStore: No existing store found, creating new one. Reason: {e}")
 
             # Add new docs
             store.add_documents(documents)

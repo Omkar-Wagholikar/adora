@@ -8,6 +8,9 @@ from .factories.llm.llmFactory import LLMFactory
 from .pipeline.assembler import get_docs, build_qa_system
 from .utils.logging_setup import setup_logging
 
+# please run this to install the python part of the package locally so that it interfaces with the go hlaf correctly
+# pip install -e .
+
 # clear && python -m adora.main
 
 # # Run with a query

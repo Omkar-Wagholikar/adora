@@ -36,7 +36,7 @@ func main() {
 	}
 
 	flush := func() {
-		for evType, file := range pending {
+		for file, evType := range pending {
 			log.Printf("Debounced event: %s %s\n", evType, file)
 			callpython.PerformFileOp(evType, file)
 		}
