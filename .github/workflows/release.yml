@@ -46,31 +46,31 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  # publish-to-pypi:
-  #   name: Publish to PyPI 📦
-  #   if: startsWith(github.ref, 'refs/tags/')
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/project/adora
+  publish-to-pypi:
+    name: Publish to PyPI 📦
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/adora
 
-  #   permissions:
-  #     id-token: write # Allows the action to authenticate with PyPI
+    permissions:
+      id-token: write # Allows the action to authenticate with PyPI
 
-  #   steps:
-  #     - name: Download distribution packages
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: python-package-distributions
-  #         path: dist/
+    steps:
+      - name: Download distribution packages
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
 
-  #     - name: Publish to PyPI
-  #       uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
     name: Create GitHub Release and upload assets
-    # needs: publish-to-pypi
+    needs: publish-to-pypi
     runs-on: ubuntu-latest
 
     permissions:
