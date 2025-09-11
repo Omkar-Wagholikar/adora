@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from typing import Any, Optional, Dict
 
 
 class LLMConfig(BaseModel):
@@ -17,7 +17,11 @@ class EmbeddingConfig(BaseModel):
     model_name: str
     dimensions: int
     normalize: bool
-
+    ensemble_weights: Optional[Dict[str, float]] = None
+    cache_dir: Optional[str] = "./embedding_cache"
+    tfidf_config: Optional[Dict[str, Any]] = None
+    lda_config: Optional[Dict[str, Any]] = None
+    bm25_enabled: Optional[bool] = True
 
 class VectorStoreConfig(BaseModel):
     type: str
