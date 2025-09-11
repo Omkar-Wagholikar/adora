@@ -1,9 +1,9 @@
 package main
 
 import (
-	filewatcher "goHalf/fileWatcher"
+	persistentFileWatcher "goHalf/persistentFileWatcher"
 )
 
 func main() {
-	filewatcher.FileWatcher("/home/omkar/rag_check/watched")
+	persistentFileWatcher.FileWatcher("/home/omkar/rag_check/watched")
 }
