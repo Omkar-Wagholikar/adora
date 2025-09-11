@@ -70,7 +70,7 @@ jobs:
 
   github-release:
     name: Create GitHub Release and upload assets
-    needs: publish-to-pypi
+    # needs: publish-to-pypi
     runs-on: ubuntu-latest
 
     permissions:
