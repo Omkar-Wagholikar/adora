@@ -6,3 +6,7 @@ class BaseVectorStore(ABC):
     def create(self, embedder: Any, documents: list = None, save_if_not_local=False) -> Any:
         """Return a LangChain VectorStore instance"""
         pass
+
+    @abstractmethod
+    def remove_by_path(self, embedder, path: str) -> Any:
+        pass

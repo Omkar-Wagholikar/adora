@@ -51,3 +51,32 @@ class FaissVectorStore(BaseVectorStore):
                 embedder,
                 allow_dangerous_deserialization=self.config.allow_dangerous_deserialization,
             )
+        
+    def remove_by_path(self, embedder, path: str):
+        """Remove all documents with metadata['source'] == path from the FAISS store."""
+        self.logger.info(f"FaissVectorStore: Removing documents from path={path}")
+
+        store = FAISS.load_local(
+            self.config.persist_path,
+            embedder,
+            allow_dangerous_deserialization=self.config.allow_dangerous_deserialization,
+        )
+
+        # Extract all documents
+        docs = store.docstore._dict  # internal dict: {id: Document}
+        filtered_docs = [doc for doc in docs.values() if doc.metadata.get("source") != path]
+
+        # Rebuild FAISS index
+        if filtered_docs:
+            new_store = FAISS.from_documents(filtered_docs, store.embedding_function)
+        else:
+            dummy_doc = Document(page_content="dummy", metadata={"source": "dummy"})
+            new_store = FAISS.from_documents([dummy_doc], store.embedding_function)
+
+        # Save back
+        if self.config.persist_path:
+            os.makedirs(self.config.persist_path, exist_ok=True)
+            new_store.save_local(self.config.persist_path)
+            self.logger.info("FaissVectorStore: Updated store saved after deletion")
+
+        return new_store
