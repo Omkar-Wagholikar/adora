@@ -1,11 +1,11 @@
 import sys
 import logging
 from pathlib import Path
-from adora.config_parser.parser import load_config
-from adora.config_parser.data_types import RAGConfig
-from adora.factories.vectorStore.vector_store_factory import VectorStoreFactory
-from adora.factories.embedding.embeddingFactory import EmbeddingFactory
-from adora.pipeline.assembler import get_docs
+from brags.config_parser.parser import load_config
+from brags.config_parser.data_types import RAGConfig
+from brags.factories.vectorStore.vector_store_factory import VectorStoreFactory
+from brags.factories.embedding.embeddingFactory import EmbeddingFactory
+from brags.pipeline.assembler import get_docs
 
 logger = logging.getLogger("Adora")
 logging.basicConfig(level=logging.INFO)
