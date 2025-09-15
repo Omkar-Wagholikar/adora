@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "brags"
-version = "0.0.1"
+version = "0.0.4"
 description = "A modular Retrieval-Augmented Generation (RAG) package with FAISS, HuggingFace embeddings, and ensemble retrievers."
 authors = ["Omkar Wagholikar <omkargwagholikar@gmail.com>"]
 license = "MIT"
