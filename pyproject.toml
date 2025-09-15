@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "adora"
-version = "0.1.2"
+name = "brags"
+version = "0.0.1"
 description = "A simple command-line tool"
 authors = ["Your Name <youremail@example.com>"]
 license = "MIT"
