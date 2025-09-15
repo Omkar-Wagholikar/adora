@@ -27,7 +27,26 @@ embedding:
   model_name: "sentence-transformers/all-MiniLM-L6-v2"
   dimensions: 384
   normalize: true
+  # ensemble_weights:
+  #       - vector': 0.4
+  #       - tfidf': 0.3
+  #       - lda': 0.2
+  #       - bm25': 0.1
+  # cache_dir: "./ensemble_cache"
+  # tfidf_config:
+  #     - max_features: 10000
+  #     - stop_words: 'english'
+  #     - ngram_range: (1, 2)
+  #     - min_df: 2
+  #     - max_df: 0.8
 
+  # lda_config:
+  #     - num_topics: 15
+  #     - passes: 10
+  #     - random_state: 42
+  #     - alpha: 'auto'
+  
+  # bm25_enabled: true
 # ----------------------------
 # VECTOR STORE CONFIGURATION
 # ----------------------------

@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Any, Optional, Dict
 
-
 class LLMConfig(BaseModel):
     provider: str
     model_name: str
@@ -10,7 +9,6 @@ class LLMConfig(BaseModel):
     api_keys: Optional[Dict[str, str]] = None
     huggingface_api_token: Optional[str] = None
     ollama_host: Optional[str] = None
-
 
 class EmbeddingConfig(BaseModel):
     provider: str
