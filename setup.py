@@ -1,5 +1,5 @@
 import setuptools
-from adora.version import Version
+from brags.version import Version
 
 
 setuptools.setup(name='adora',
