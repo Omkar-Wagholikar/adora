@@ -1,4 +1,4 @@
-from adora.config_parser.data_types import RAGConfig
+from brags.config_parser.data_types import RAGConfig
 
 
 def print_rag_config(config: RAGConfig):

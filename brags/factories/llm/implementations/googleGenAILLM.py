@@ -1,6 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from adora.factories.baseclasses.basellm import BaseLLM
+from brags.factories.baseclasses.basellm import BaseLLM
 
 
 class GoogleGenAILLM(BaseLLM):

@@ -1,5 +1,5 @@
-from adora.factories.embedding.embeddingFactory import EmbeddingFactory
-from adora.factories.vectorStore.vector_store_factory import VectorStoreFactory
+from brags.factories.embedding.embeddingFactory import EmbeddingFactory
+from brags.factories.vectorStore.vector_store_factory import VectorStoreFactory
 from .config_parser.data_types import EmbeddingConfig, VectorStoreConfig
 from .test_documents import documents
 

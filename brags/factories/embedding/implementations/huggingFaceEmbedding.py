@@ -1,6 +1,6 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-from adora.factories.baseclasses.baseembedding import BaseEmbedding
+from brags.factories.baseclasses.baseembedding import BaseEmbedding
 
 class HuggingFaceEmbedding(BaseEmbedding):
     def __init__(self, config):

@@ -1,5 +1,5 @@
-from adora.config_parser.data_types import EmbeddingConfig
-from adora.factories.baseclasses.baseembedding import BaseEmbedding
+from brags.config_parser.data_types import EmbeddingConfig
+from brags.factories.baseclasses.baseembedding import BaseEmbedding
 from .implementations.huggingFaceEmbedding import HuggingFaceEmbedding
 from .implementations.ensembleEmbedding import EnsembleEmbedding
 
