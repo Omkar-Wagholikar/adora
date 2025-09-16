@@ -1,17 +1,19 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
-OUT_DIR="../brags/bin"
-mkdir -p $OUT_DIR
+# Ensure we are in the script's directory
+cd "$(dirname "$0")"
 
-# Linux (x86_64)
-GOOS=linux GOARCH=amd64 go build -buildmode=c-shared -o $OUT_DIR/filewatcher_linux_amd64.so ./main.go
+# Output directory for built artifacts
+OUTDIR="../brags/bin"
+mkdir -p "$OUTDIR"
 
-# macOS (x86_64)
-GOOS=darwin GOARCH=amd64 go build -buildmode=c-shared -o $OUT_DIR/filewatcher_darwin_amd64.dylib ./main.go
+echo "Building Go shared library for Linux..."
 
-# macOS (ARM M1/M2)
-GOOS=darwin GOARCH=arm64 go build -buildmode=c-shared -o $OUT_DIR/filewatcher_darwin_arm64.dylib ./main.go
+# Enable cgo and build as shared object (.so)
+CGO_ENABLED=1 go build \
+  -buildmode=c-shared \
+  -o "$OUTDIR/libbrags.so" \
+  ./main.go
 
-# Windows (x86_64)
-GOOS=windows GOARCH=amd64 go build -buildmode=c-shared -o $OUT_DIR/filewatcher_windows_amd64.dll ./main.go
-
+echo "Build complete: $OUTDIR/libbrags.so"
