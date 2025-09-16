@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "brags"
-version = "0.0.4"
+version = "0.0.5"
 description = "Build-your-own Retrieval-Augmented Generation (RAG) system"
 readme = "README.md"
 authors = ["Omkar Wagholikar <omkargwagholikar@gmail.com>"]

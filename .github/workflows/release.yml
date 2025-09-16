@@ -7,11 +7,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10"]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
 
       - name: Install Poetry
         uses: snok/install-poetry@v1.4.1
@@ -31,15 +27,13 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install build tools (Linux only)
-        if: runner.os == 'Linux'
+      - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y build-essential
 
       - name: Build Go binaries
         run: |
           cd go
           chmod +x build.sh
-          # ensure CGO is enabled
           export CGO_ENABLED=1
           ./build.sh
 
@@ -49,7 +43,7 @@ jobs:
       - name: Upload distribution packages
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions-${{ matrix.os }}
+          name: python-package-distributions
           path: dist/
 
   publish-to-pypi:
