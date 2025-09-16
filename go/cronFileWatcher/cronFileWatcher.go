@@ -74,7 +74,7 @@ func FileWatcher() {
 		for k, v := range vals {
 			if mapping[k].Compare(v) == -1 { // only tirgger if mapping is older than vals
 				mapping[k] = v
-				fmt.Println(k + " was updated")
+				log.Println(k + " was updated")
 			}
 		}
 		log.Info("[Job 1] Running complete")
