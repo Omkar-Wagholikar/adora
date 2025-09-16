@@ -12,7 +12,7 @@ It combines Python for the RAG logic and a background **Go file watcher** that m
 -  **Pluggable embeddings** (HuggingFace, OpenAI, etc.)
 -  **Flexible LLM providers** (OpenAI, Gemini, Ollama, HuggingFace)
 -  **Multiple vector stores** (FAISS, Chroma, Qdrant, Pinecone, Weaviate)
-- ⚙️ **Two file watcher modes**:
+-  **Two file watcher modes**:
   - **Persistent (event-driven)** → watches changes in real time via `fsnotify`
   - **Cron (polling-based)** → scans folder at regular intervals
 -  **Chunking and reranking** options
@@ -26,7 +26,7 @@ It combines Python for the RAG logic and a background **Go file watcher** that m
 Clone the repo and install using Poetry or pip:
 
 ```bash
-git clone https://github.com/yourusername/brags.git
+git clone https://github.com/omkar-wagholikar/brags.git
 cd brags
 pip install -e .
 ````

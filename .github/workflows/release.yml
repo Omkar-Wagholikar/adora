@@ -31,10 +31,16 @@ jobs:
         with:
           go-version: "1.22"
 
+      - name: Install build tools (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
       - name: Build Go binaries
         run: |
           cd go
           chmod +x build.sh
+          # ensure CGO is enabled
+          export CGO_ENABLED=1
           ./build.sh
 
       - name: Build wheel
