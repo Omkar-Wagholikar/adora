@@ -5,20 +5,17 @@ description = "Build-your-own Retrieval-Augmented Generation (RAG) system"
 readme = "README.md"
 authors = ["Omkar Wagholikar <omkargwagholikar@gmail.com>"]
 license = "MIT"
+packages = [{include = "brags"}]
+include = [
+    "brags/bin/*",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.0"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.include]
-# Include Go binaries in wheels
-# (have to run `go/build.sh` before publishing)
-files = [
-  { path = "brags/bin/*", format = "wheel" },
-]
