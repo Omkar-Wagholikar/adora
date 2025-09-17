@@ -2,6 +2,7 @@ package cronFileWatcher
 
 import (
 	"fmt"
+	"goHalf/utils"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -33,7 +34,7 @@ func listFiles(dir string, pattern string) map[string]time.Time {
 			fileInfo, err := os.Stat(path)
 			if err != nil {
 				if os.IsNotExist(err) {
-					fmt.Printf("File '%s' does not exist.\n", path)
+					log.Printf("File '%s' does not exist.\n", path)
 				} else {
 					log.Fatalf("Error getting file info for '%s': %v\n", path, err)
 				}
@@ -56,6 +57,7 @@ func listFiles(dir string, pattern string) map[string]time.Time {
 //
 // c.AddFunc("0 * * * * *", func() {})
 func FileWatcher(path string, period int) {
+	utils.SetUpLogs()
 	log.Info("Create new cron scheduler")
 
 	// Create new cron (with seconds support)
@@ -74,7 +76,12 @@ func FileWatcher(path string, period int) {
 		}
 
 		for k, v := range vals {
-			if mapping[k].Compare(v) == -1 { // only tirgger if mapping is older than vals
+			fmt.Println(k)
+			value, exists := mapping[k]
+			if !exists {
+				log.Println("Created new value: ", k)
+			}
+			if value.Compare(v) == -1 { // only tirgger if mapping is older than vals
 				mapping[k] = v
 				log.Println(k + " was updated")
 			}

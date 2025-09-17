@@ -55,18 +55,25 @@ func ListAllWatchers() ([]server.WatchEntry, error) {
 	return watchers, nil
 }
 
+func InitializeJob(job server.WatchEntry) {
+	switch job.WatcherType {
+	case "persistent":
+		// spawn a go routine
+		go StartPersistentWatcher(job.GivenPath)
+	case "cron":
+		// spawn a go routine
+		go StartCronWatcher(job.GivenPath, int(job.Period))
+	default:
+		log.Println("Unknown config given crashing")
+		os.Exit(2)
+	}
+}
+
 func InitializeAllJobs(active_jobs []server.WatchEntry) {
 	for _, entry := range active_jobs {
+		InitializeJob(entry)
 		log.Printf("%s %s %d %v", entry.GivenPath, entry.WatcherType, entry.Period, entry.LastUpdate)
-		switch entry.WatcherType {
-		case "persistent":
-			StartPersistentWatcher(entry.GivenPath)
-		case "cron":
-			StartCronWatcher(entry.GivenPath, int(entry.Period))
-		default:
-			log.Println("Unknown config given crashing")
-			os.Exit(2)
-		}
+
 	}
 }
 
@@ -87,6 +94,7 @@ func main() {
 	active_jobs, err := ListAllWatchers()
 	if err != nil {
 		log.Println("ActiveJobs directory may be corruted exiting")
+		log.Print(err.Error())
 		os.Exit(1)
 	}
 
@@ -115,6 +123,8 @@ func main() {
 			Period:      int64(period),
 			LastUpdate:  make(map[string]time.Time),
 		}
+
+		InitializeJob(*watcher)
 
 		if err := AppendWatcherToFile(watcher); err != nil {
 			http.Error(w, "Failed to write to file: "+err.Error(), http.StatusInternalServerError)
