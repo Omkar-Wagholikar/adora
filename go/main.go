@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"time"
 
+	cronFileWatcher "goHalf/cronFileWatcher"
+	persistentFileWatcher "goHalf/persistentFileWatcher"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -52,11 +55,33 @@ func ListAllWatchers() ([]server.WatchEntry, error) {
 	return watchers, nil
 }
 
-func initializeAllJobs(active_jobs []server.WatchEntry) {
+func InitializeAllJobs(active_jobs []server.WatchEntry) {
 	for _, entry := range active_jobs {
 		log.Printf("%s %s %d %v", entry.GivenPath, entry.WatcherType, entry.Period, entry.LastUpdate)
+		switch entry.WatcherType {
+		case "persistent":
+			StartPersistentWatcher(entry.GivenPath)
+		case "cron":
+			StartCronWatcher(entry.GivenPath, int(entry.Period))
+		default:
+			log.Println("Unknown config given crashing")
+			os.Exit(2)
+		}
 	}
 }
+
+//export StartCronWatcher
+func StartCronWatcher(path string, period int) {
+	log.Info("Go: Starting Cron Watcher...")
+	cronFileWatcher.FileWatcher(path, period)
+}
+
+//export StartPersistentWatcher
+func StartPersistentWatcher(path string) {
+	log.Infof("Go: Starting Persistent Watcher at %s", path)
+	persistentFileWatcher.FileWatcher(path)
+}
+
 func main() {
 	utils.SetUpLogs()
 	active_jobs, err := ListAllWatchers()
@@ -65,7 +90,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	initializeAllJobs(active_jobs)
+	InitializeAllJobs(active_jobs)
 
 	http.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

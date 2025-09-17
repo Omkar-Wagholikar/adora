@@ -55,17 +55,19 @@ func listFiles(dir string, pattern string) map[string]time.Time {
 //	sec min hour day month weekday
 //
 // c.AddFunc("0 * * * * *", func() {})
-func FileWatcher() {
+func FileWatcher(path string, period int) {
 	log.Info("Create new cron scheduler")
 
 	// Create new cron (with seconds support)
 	c := cron.New(cron.WithSeconds())
 	var mapping map[string]time.Time = nil
 
+	spec := fmt.Sprintf("@every %ds", period)
+
 	// Add jobs
-	_, err := c.AddFunc("*/3 * * * * *", func() { // every minute at second 0
-		log.Info("[Job 1] Running started")
-		vals := listFiles("/home/omkar/rag_check/watched/", "*.txt")
+	_, err := c.AddFunc(spec, func() { // every minute at second 0
+		log.Infof("[Cron for %s] Running started\n", path)
+		vals := listFiles(path, "*.pdf")
 		if mapping == nil {
 			mapping = vals
 			return
@@ -77,7 +79,7 @@ func FileWatcher() {
 				log.Println(k + " was updated")
 			}
 		}
-		log.Info("[Job 1] Running complete")
+		log.Infof("[Cron for %s] Running complete\n", path)
 	})
 	if err != nil {
 		log.Fatal(err)
