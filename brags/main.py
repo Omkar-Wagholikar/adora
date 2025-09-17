@@ -70,9 +70,9 @@ def main():
     res = qa(args.query)
     logger.info(f"Got result: {res}")
 
-    print("\n=== Answer ===")
-    print(res['result'])
-    print("==============\n")
+    logger.info("\n=== Answer ===")
+    logger.info(res['result'])
+    logger.info("==============\n")
 
 
 if __name__ == "__main__":
