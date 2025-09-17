@@ -72,28 +72,41 @@
 # # results = embedding_instance.get_ensemble_similarities("how do you minimize asset risk", top_k=5)
 # # print(results)
 
-import ctypes
-from pathlib import Path
-import sys
+# import ctypes
+# from pathlib import Path
+# import sys
 
-def load_go_library():
-    base_dir = Path(__file__).parent / "bin"
-    lib_path = base_dir / "libbrags.so"
-    if not lib_path.exists():
-        raise FileNotFoundError(f"Go library not found: {lib_path}")
-    return ctypes.CDLL(str(lib_path))
+# def load_go_library():
+#     base_dir = Path(__file__).parent / "bin"
+#     lib_path = base_dir / "libbrags.so"
+#     if not lib_path.exists():
+#         raise FileNotFoundError(f"Go library not found: {lib_path}")
+#     return ctypes.CDLL(str(lib_path))
 
-go_lib = load_go_library()
+# go_lib = load_go_library()
 
-# declare signatures
-go_lib.StartCronWatcher.argtypes = []
-go_lib.StartCronWatcher.restype = None
+# # declare signatures
+# go_lib.StartCronWatcher.argtypes = []
+# go_lib.StartCronWatcher.restype = None
 
-go_lib.StartPersistentWatcher.argtypes = [ctypes.c_char_p]
-go_lib.StartPersistentWatcher.restype = None
+# go_lib.StartPersistentWatcher.argtypes = [ctypes.c_char_p]
+# go_lib.StartPersistentWatcher.restype = None
 
-# call cron watcher
-go_lib.StartCronWatcher()
+# # call cron watcher
+# go_lib.StartCronWatcher()
 
-# call persistent watcher
-# go_lib.StartPersistentWatcher(b"/home/omkar/rag_check/watched")
+# # call persistent watcher
+# # go_lib.StartPersistentWatcher(b"/home/omkar/rag_check/watched")
+
+
+import os
+from ._golib import go_lib
+
+# Optional: protect with env var so user can control behavior
+if not os.environ.get("BRAGS_SKIP_INIT"):
+    try:
+        go_lib.StartCronWatcher()
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to start Go watcher: {e}")
+
