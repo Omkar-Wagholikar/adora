@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"goHalf/server"
+	server_datatypes "goHalf/server"
 	"goHalf/utils"
 	"net/http"
 	"os"
@@ -14,6 +14,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
+
+type Response struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}
 
 func main() {
 	utils.SetUpLogs()
@@ -34,7 +39,13 @@ func main() {
 	// Initialize all existing jobs
 	watcherManager.InitializeAllJobs()
 
-	http.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	server := &http.Server{
+		Addr:    ":8011",
+		Handler: mux,
+	}
+
+	mux.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -51,7 +62,7 @@ func main() {
 			return
 		}
 
-		watcher := server.WatchEntry{
+		watcher := server_datatypes.WatchEntry{
 			GivenPath:   path,
 			WatcherType: wtype,
 			Period:      int64(period),
@@ -66,7 +77,7 @@ func main() {
 		json.NewEncoder(w).Encode(watcher)
 	})
 
-	http.HandleFunc("/list_watchers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/list_watchers", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -77,6 +88,31 @@ func main() {
 		json.NewEncoder(w).Encode(watchers)
 	})
 
-	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	mux.HandleFunc("/kill", func(w http.ResponseWriter, r *http.Request) {
+		// Respond to the client
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(Response{
+			Message: "killing server process",
+			Status:  "server shutting down",
+		})
+		log.Println("Received /kill request. Sending shutdown signal...")
+
+		// Initiate the shutdown from a separate goroutine
+		go func() {
+			// Give the response time to be sent
+			time.Sleep(1 * time.Second)
+			os.Exit(0)
+		}()
+	})
+
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(Response{Message: "pong", Status: "server running normally"})
+	})
+
+	fmt.Println("Server running at http://localhost:8011")
+	// log.Fatal(http.ListenAndServe(":8011", nil))
+	log.Fatal(server.ListenAndServe())
 }
