@@ -11,10 +11,19 @@ def setup_logging(config: LoggingConfig):
 
     handlers = [logging.StreamHandler()]
     if config.log_to_file and config.log_file_path:
-        print(f"Logging to file: {config.log_file_path}")
         log_path = Path(config.log_file_path)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        handlers.append(logging.FileHandler(log_path))
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setLevel(log_level)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+        logging.basicConfig(level=log_level, handlers=[file_handler])
+        print(f"Logging to file: {config.log_file_path}")
+    
+        # print(f"Logging to file: {config.log_file_path}")
+        # log_path = Path(config.log_file_path)
+        # log_path.parent.mkdir(parents=True, exist_ok=True)
+        # handlers.append(logging.FileHandler(log_path))
 
     logging.basicConfig(
         level=log_level,
