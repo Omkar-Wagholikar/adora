@@ -11,6 +11,7 @@ def setup_logging(config: LoggingConfig):
 
     handlers = [logging.StreamHandler()]
     if config.log_to_file and config.log_file_path:
+        print(f"Logging to file: {config.log_file_path}")
         log_path = Path(config.log_file_path)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         handlers.append(logging.FileHandler(log_path))
