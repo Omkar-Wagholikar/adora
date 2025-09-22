@@ -7,12 +7,12 @@ from brags.factories.vectorStore.vector_store_factory import VectorStoreFactory
 from brags.factories.embedding.embeddingFactory import EmbeddingFactory
 from brags.pipeline.assembler import get_docs
 
-logger = logging.getLogger("Adora")
+logger = logging.getLogger("brags")
 logging.basicConfig(level=logging.INFO)
 
 def update_vector_store(event_type: str, file_path: str):
     # Load YAML config
-    config:RAGConfig = load_config("/home/omkar/rag_check/adora/adora/rag_config.yaml")
+    config:RAGConfig = load_config("/home/omkar/rag_check/brags/brags/rag_config.yaml")
     vs_config = config.vector_store
     vector_store = VectorStoreFactory.create(vs_config)
 
