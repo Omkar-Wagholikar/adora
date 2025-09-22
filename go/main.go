@@ -114,5 +114,6 @@ func main() {
 
 	fmt.Println("Server running at http://localhost:8011")
 	// log.Fatal(http.ListenAndServe(":8011", nil))
+	// log.Fatal(http.ListenAndServe(":8011", mux))
 	log.Fatal(server.ListenAndServe())
 }
