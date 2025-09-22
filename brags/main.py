@@ -41,7 +41,7 @@ def get_qa_object(config_path: Path, docs_path: str | None = None):
 
 def repl(qa, logger):
     """Interactive REPL for asking queries to the QA system."""
-    logger.info("Entering interactive REPL. Type 'exit' or 'quit' to leave.")
+    print("Entering interactive REPL. Type 'exit' or 'quit' to leave.")
     try:
         while True:
             query = input("\n>>> ").strip()
@@ -62,6 +62,7 @@ def repl(qa, logger):
                 logger.error(f"Error while processing query: {e}", exc_info=True)
                 print(f"Error: {e}")
     except KeyboardInterrupt:
+        print("REPL interrupted by user. Exiting.")
         logger.info("REPL interrupted by user. Exiting.")
 
 def main():
