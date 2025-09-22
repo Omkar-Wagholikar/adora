@@ -99,14 +99,14 @@
 # # go_lib.StartPersistentWatcher(b"/home/omkar/rag_check/watched")
 
 
-import os
-from ._golib import go_lib
+# import os
+# from ._golib import go_lib
 
-# Optional: protect with env var so user can control behavior
-if not os.environ.get("BRAGS_SKIP_INIT"):
-    try:
-        go_lib.StartCronWatcher()
-    except Exception as e:
-        import logging
-        logging.warning(f"Failed to start Go watcher: {e}")
+# # Optional: protect with env var so user can control behavior
+# if not os.environ.get("BRAGS_SKIP_INIT"):
+#     try:
+#         go_lib.StartCronWatcher()
+#     except Exception as e:
+#         import logging
+#         logging.warning(f"Failed to start Go watcher: {e}")
 
