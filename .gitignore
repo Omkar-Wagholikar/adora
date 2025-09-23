@@ -9,7 +9,7 @@
 rag_config.yaml
 testFiles/
 rag_logs.log
-vector_db/
+# vector_db/
 
 # Packages
 *.egg
