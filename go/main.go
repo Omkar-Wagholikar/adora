@@ -15,6 +15,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// http://localhost:8011/add_path?path=/home/omkar/rag_check/watched&type=cron&period=6
+
 type Response struct {
 	Message string `json:"message"`
 	Status  string `json:"status"`
@@ -25,6 +27,7 @@ func main() {
 
 	// Create watcher manager with 30-second update interval
 	watcherManager := watchermanager.NewWatcherManager(3 * time.Second)
+	log.Println("new watcher made")
 
 	// Load existing watchers
 	if err := watcherManager.LoadWatchers(); err != nil {
@@ -32,9 +35,11 @@ func main() {
 		log.Print(err.Error())
 		os.Exit(1)
 	}
+	log.Println("file watchers loaded")
 
 	// Start periodic updates
 	watcherManager.Start()
+	log.Println("new watcher made")
 
 	// Initialize all existing jobs
 	watcherManager.InitializeAllJobs()
@@ -44,6 +49,8 @@ func main() {
 		Addr:    ":8011",
 		Handler: mux,
 	}
+	mux.Handle("/", http.FileServer(http.Dir("/home/omkar/rag_check/brags/go/static")))
+	mux.HandleFunc("/ws", server_datatypes.HandleWS)
 
 	mux.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

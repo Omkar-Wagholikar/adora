@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python REPL</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background-color: #2d5a2d;
+            color: #4CAF50;
+        }
+        
+        .status.disconnected {
+            background-color: #5a2d2d;
+            color: #f44336;
+        }
+        
+        .terminal {
+            background-color: #2d2d2d;
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .input-container {
+            display: flex;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        .prompt {
+            color: #4CAF50;
+            font-weight: bold;
+            align-self: center;
+        }
+        
+        #commandInput {
+            flex: 1;
+            background-color: #3d3d3d;
+            color: #ffffff;
+            border: 2px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        #commandInput:focus {
+            border-color: #4CAF50;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .output-line {
+            margin-bottom: 5px;
+        }
+        
+        .python-output {
+            color: #ffffff;
+        }
+        
+        .python-error {
+            color: #ff6b6b;
+        }
+        
+        .user-input {
+            color: #4CAF50;
+        }
+        
+        .user-input::before {
+            content: ">>> ";
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Brags REPL (Build your own RAGs)</h1>
+        
+        <div id="status" class="status disconnected">
+            Disconnected
+        </div>
+        
+        <div class="controls">
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button id="clearBtn" onclick="clearTerminal()">Clear</button>
+        </div>
+        
+        <div id="terminal" class="terminal">
+            <div class="output-line">Welcome to Python REPL via WebSocket</div>
+            <div class="output-line">Click "Connect" to start...</div>
+        </div>
+        
+        <div class="input-container">
+            <span class="prompt">>>></span>
+            <input type="text" id="commandInput" placeholder="Enter Python command..." disabled>
+            <button id="sendBtn" onclick="sendCommand()" disabled>Send</button>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isConnected = false;
+        
+        // WebSocket server URL - adjust this to match your Go server
+        const WS_URL = 'ws://localhost:8011/ws'; // Change port/path as needed
+        
+        const terminal = document.getElementById('terminal');
+        const status = document.getElementById('status');
+        const commandInput = document.getElementById('commandInput');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        function connect() {
+            if (socket) {
+                socket.close();
+            }
+            
+            try {
+                socket = new WebSocket(WS_URL);
+                
+                socket.onopen = function(event) {
+                    isConnected = true;
+                    updateStatus('Connected to Python REPL', true);
+                    updateButtons();
+                    addToTerminal('Connected to Python REPL server', 'python-output');
+                    commandInput.focus();
+                };
+                
+                socket.onmessage = function(event) {
+                    addToTerminal(event.data, 'python-output');
+                };
+                
+                socket.onclose = function(event) {
+                    isConnected = false;
+                    updateStatus('Disconnected', false);
+                    updateButtons();
+                    addToTerminal('Connection closed', 'python-error');
+                };
+                
+                socket.onerror = function(error) {
+                    addToTerminal('WebSocket error: ' + error, 'python-error');
+                    updateStatus('Connection Error', false);
+                };
+                
+            } catch (error) {
+                addToTerminal('Failed to connect: ' + error.message, 'python-error');
+                updateStatus('Connection Failed', false);
+            }
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.close();
+            }
+        }
+        
+        function sendCommand() {
+            const command = commandInput.value.trim();
+            if (command && socket && isConnected) {
+                // Display the command in terminal
+                addToTerminal(command, 'user-input');
+                
+                // Send to Python REPL via WebSocket
+                socket.send(command);
+                
+                // Clear input and focus
+                commandInput.value = '';
+                commandInput.focus();
+            }
+        }
+        
+        function addToTerminal(text, className = '') {
+            const line = document.createElement('div');
+            line.className = `output-line ${className}`;
+            line.textContent = text;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function clearTerminal() {
+            terminal.innerHTML = '';
+        }
+        
+        function updateStatus(message, connected) {
+            status.textContent = message;
+            status.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+        
+        function updateButtons() {
+            connectBtn.disabled = isConnected;
+            disconnectBtn.disabled = !isConnected;
+            sendBtn.disabled = !isConnected;
+            commandInput.disabled = !isConnected;
+        }
+        
+        // Handle Enter key in input field
+        commandInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendCommand();
+            }
+        });
+        
+        // Handle Ctrl+C to interrupt Python (optional)
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'c' && isConnected) {
+                socket.send('\x03'); // Send interrupt signal
+            }
+        });
+        
+        // Auto-connect on page load (optional)
+        // connect();
+    </script>
+</body>
+</html>

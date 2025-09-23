@@ -57,7 +57,7 @@ func (wm *WatcherManager) syncWatchersToFile() error {
 	log.Println("syncWatchersToFile accquired lock")
 
 	// Create temporary file
-	tempFile, err := os.CreateTemp("", "ActiveWatcherList.tmp")
+	tempFile, err := os.CreateTemp("/home/omkar/rag_check/brags/brags/bin", "ActiveWatcherList.tmp")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -115,6 +115,8 @@ func (wm *WatcherManager) GetWatchers() []server.WatchEntry {
 
 // LoadWatchers loads watchers from the file
 func (wm *WatcherManager) LoadWatchers() error {
+	log.Println("LoadWatchers started")
+
 	watchers, err := ListAllWatchers()
 	if err != nil {
 		return err
@@ -128,7 +130,7 @@ func (wm *WatcherManager) LoadWatchers() error {
 }
 
 func AppendWatcherToFile(watcher *server.WatchEntry) error {
-	file, err := os.OpenFile("ActiveWatcherList", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("/home/omkar/rag_check/brags/brags/bin/ActiveWatcherList", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -144,10 +146,17 @@ func AppendWatcherToFile(watcher *server.WatchEntry) error {
 }
 
 func ListAllWatchers() ([]server.WatchEntry, error) {
-	file, err := os.Open("ActiveWatcherList")
+	log.Println("ListAllWatchers started")
+	log.Println("Getting file")
+	file, err := os.Open("/home/omkar/rag_check/brags/brags/bin/ActiveWatcherList")
+	log.Println("Got file")
+
 	if err != nil {
+		log.Println("Failed to open or create ActiveWatcherList")
 		return nil, err
 	}
+	log.Println("No error in getting file")
+
 	defer file.Close()
 
 	var watchers []server.WatchEntry
@@ -162,6 +171,7 @@ func ListAllWatchers() ([]server.WatchEntry, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
+	log.Println("ListAllWatchers complete")
 	return watchers, nil
 }
 

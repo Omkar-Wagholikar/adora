@@ -6,7 +6,7 @@ import (
 )
 
 func PerformFileOp(event_type string, file_path string) {
-	python_file_path := "pythonFiles/vector_store_updater.py"
+	python_file_path := "/home/omkar/rag_check/brags/go/pythonFiles/vector_store_updater.py"
 	log.Println("PerformFileOp:\t" + event_type + "\t" + file_path)
 	cmd := exec.Command("python3", python_file_path, event_type, file_path)
 	output, err := cmd.CombinedOutput()
