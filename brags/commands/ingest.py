@@ -31,7 +31,7 @@ def run(args):
     config: RAGConfig = load_config(config_path)
 
     setup_logging(config.logging)
-    logger = logging.getLogger("Brags") 
+    logger = logging.getLogger("INGEST") 
     
     logger.info(f"Ingesting documents from {args.docs} using config {args.config}")
     

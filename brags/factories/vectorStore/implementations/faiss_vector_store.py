@@ -11,7 +11,7 @@ from ...baseclasses.basevectorstore import BaseVectorStore
 class FaissVectorStore(BaseVectorStore):
     def __init__(self, config: VectorStoreConfig):
         self.config = config
-        self.logger = logging.getLogger("Adora")
+        self.logger = logging.getLogger("FaissVectorStore")
 
     def create(self, embedder, documents=None, save_if_not_local=False):
         if documents:

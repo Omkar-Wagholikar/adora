@@ -60,7 +60,7 @@ def get_qa_object(config_path: Path, docs_path: str | None = None):
     config: RAGConfig = load_config(config_path)
     
     setup_logging(config.logging)
-    logger = logging.getLogger("Brags") 
+    logger = logging.getLogger("QUERY") 
 
     logger.info("Running Brags...")
     docs = get_docs(docs_path) if docs_path else None

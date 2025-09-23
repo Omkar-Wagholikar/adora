@@ -6,13 +6,16 @@ from brags.config_parser.data_types import RAGConfig
 from brags.factories.vectorStore.vector_store_factory import VectorStoreFactory
 from brags.factories.embedding.embeddingFactory import EmbeddingFactory
 from brags.pipeline.assembler import get_docs
+from brags.utils.logging_setup import setup_logging
 
-logger = logging.getLogger("brags")
-logging.basicConfig(level=logging.INFO)
 
 def update_vector_store(event_type: str, file_path: str):
     # Load YAML config
     config:RAGConfig = load_config("/home/omkar/rag_check/brags/brags/rag_config.yaml")
+    
+    setup_logging(config.logging)
+    logger = logging.getLogger("update_vector_store")
+
     vs_config = config.vector_store
     vector_store = VectorStoreFactory.create(vs_config)
 
