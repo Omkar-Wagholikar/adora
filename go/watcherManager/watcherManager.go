@@ -125,7 +125,7 @@ func (wm *WatcherManager) LoadWatchers() error {
 	wm.mu.Lock()
 	wm.activeWatchers = watchers
 	wm.mu.Unlock()
-
+	log.Println("LoadWatchers ended, loaded", len(wm.activeWatchers), "watchers")
 	return nil
 }
 
@@ -148,7 +148,7 @@ func AppendWatcherToFile(watcher *server.WatchEntry) error {
 func ListAllWatchers() ([]server.WatchEntry, error) {
 	log.Println("ListAllWatchers started")
 	log.Println("Getting file")
-	file, err := os.Open("/home/omkar/rag_check/brags/brags/bin/ActiveWatcherList")
+	file, err := os.Open("./ActiveWatcherList")
 	log.Println("Got file")
 
 	if err != nil {
@@ -171,7 +171,7 @@ func ListAllWatchers() ([]server.WatchEntry, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	log.Println("ListAllWatchers complete")
+	log.Println("ListAllWatchers complete, got", len(watchers), "watchers")
 	return watchers, nil
 }
 
