@@ -5,7 +5,7 @@
 *.so
 
 .env
-
+venv
 rag_config.yaml
 testFiles/
 rag_logs.log

@@ -13,6 +13,7 @@ from ..config_parser.data_types import RAGConfig
 from ..factories.llm.llmFactory import LLMFactory
 from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
+from ..factories.chains.safe_chain import SafeRetrievalQA
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -65,9 +66,11 @@ def build_qa_system(config: RAGConfig, documents: Optional[list]):
         document_prompt=document_prompt,
     )
 
-    return RetrievalQA(
+    qa = RetrievalQA(
         combine_documents_chain=combine_documents_chain,
         retriever=retriever,
         return_source_documents=True,
         verbose=config.debug,
     )
+
+    return SafeRetrievalQA(qa)
