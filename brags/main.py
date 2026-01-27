@@ -20,6 +20,7 @@ from .utils.logging_setup import setup_logging
 
 # # Run with new/ specific files:
 # clear && python -m brags.main --query "What is in the document?" --docs "/home/omkar/rag_check/brags/testFiles/test2.pdf"
+# clear && python -m brags.main --query "What is in the document?" --docs "C:/Users/SMITA/Downloads/Physics.pdf"
 
 
 
@@ -58,7 +59,9 @@ def repl(qa, logger):
                 logger.info(res["result"])
                 logger.info("==============")
                 print(f"\nAnswer: {res['result']}\n")
+                logger.info("Completed printing to console")
             except Exception as e:
+                print("There was an error")
                 logger.error(f"Error while processing query: {e}", exc_info=True)
                 print(f"Error: {e}")
     except KeyboardInterrupt:
@@ -102,7 +105,8 @@ def main():
         logger.info("=== Answer ===")
         logger.info(res['result'])
         logger.info("==============")
-    
+        print(f"\nAnswer: {res['result']}\n")
+
     else:
         logger.info("Initiating REPL")
         repl(qa, logger)
