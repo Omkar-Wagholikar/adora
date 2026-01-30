@@ -49,7 +49,7 @@ func main() {
 		Addr:    ":8011",
 		Handler: mux,
 	}
-	mux.Handle("/", http.FileServer(http.Dir("/home/omkar/rag_check/brags/go/static")))
+	mux.Handle("/", http.FileServer(http.Dir("static")))
 	mux.HandleFunc("/ws", server_datatypes.HandleWS)
 
 	mux.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {

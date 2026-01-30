@@ -57,7 +57,7 @@ func (wm *WatcherManager) syncWatchersToFile() error {
 	log.Println("syncWatchersToFile accquired lock")
 
 	// Create temporary file
-	tempFile, err := os.CreateTemp("/home/omkar/rag_check/brags/brags/bin", "ActiveWatcherList.tmp")
+	tempFile, err := os.CreateTemp("./", "ActiveWatcherList.tmp")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}

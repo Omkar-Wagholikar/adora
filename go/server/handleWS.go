@@ -34,7 +34,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	var writeMutex sync.Mutex
 
 	// Start Python subprocess (REPL)
-	cmd := exec.Command("python3", "-m", "brags", "query") // interactive
+	cmd := exec.Command("python", "-m", "brags", "query") // interactive
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Println("Failed to create stdin pipe:", err)
