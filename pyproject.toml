@@ -11,10 +11,29 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
+pydantic = "^2.11"
+PyYAML = "^6.0"
+requests = "^2.32"
+langchain = "^0.3.27"
+langchain-community = "^0.3.29"
+langchain-core = "^0.3.75"
+langchain-experimental = "^0.3.4"
+langchain-google-genai = "^2.1.10"
+langchain-text-splitters = "^0.3.11"
+faiss-cpu = "^1.12.0"
+chromadb = "^0.5"
+sentence-transformers = "^5.1.0"
+pdfplumber = "^0.11"
+
+[tool.poetry.group.ensemble.dependencies]
+scikit-learn = "^1.5"
+gensim = "^4.3"
+rank-bm25 = "^0.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
+ruff = "^0.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
