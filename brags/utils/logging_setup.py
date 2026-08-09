@@ -8,6 +8,7 @@ def setup_logging(config: LoggingConfig):
         logging.root.removeHandler(handler)
 
     log_level = getattr(logging, config.level.upper(), logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     handlers = [logging.StreamHandler()]
     if config.log_to_file and config.log_file_path:
@@ -15,16 +16,15 @@ def setup_logging(config: LoggingConfig):
         log_path.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_path)
         file_handler.setLevel(log_level)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         file_handler.setFormatter(formatter)
-        logging.basicConfig(level=log_level, handlers=[file_handler])
+        handlers.append(file_handler)
         print(f"Logging to file: {config.log_file_path}")
-    
-        # print(f"Logging to file: {config.log_file_path}")
-        # log_path = Path(config.log_file_path)
-        # log_path.parent.mkdir(parents=True, exist_ok=True)
-        # handlers.append(logging.FileHandler(log_path))
 
+    # A single basicConfig() call: logging.basicConfig() only takes effect
+    # the *first* time it's called on a logger with no handlers (without
+    # force=True), so calling it twice — once for the file handler, once for
+    # the full handler list — silently dropped the console handler whenever
+    # log_to_file was enabled, since the first call already "won".
     logging.basicConfig(
         level=log_level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
