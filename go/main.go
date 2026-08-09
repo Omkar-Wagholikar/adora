@@ -7,6 +7,7 @@ import (
 	"goHalf/utils"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -15,7 +16,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// http://localhost:8011/add_path?path=/home/omkar/rag_check/watched&type=cron&period=6
+// Example: http://localhost:8011/add_path?path=/path/to/watched&type=cron&period=6
+
+// resolveStaticDir finds the bundled static/ directory next to the running
+// executable (where build.sh copies it), falling back to a "static"
+// directory relative to the current working directory for `go run`. This
+// avoids depending on the caller's CWD, which previously broke the "/" route
+// whenever the server was spawned from a directory other than go/ or
+// go/bin/ (e.g. brags/commands/init.py spawning the binary via
+// subprocess.Popen without setting cwd).
+func resolveStaticDir() string {
+	if exePath, err := os.Executable(); err == nil {
+		candidate := filepath.Join(filepath.Dir(exePath), "static")
+		if info, statErr := os.Stat(candidate); statErr == nil && info.IsDir() {
+			return candidate
+		}
+	}
+	return "static"
+}
 
 type Response struct {
 	Message string `json:"message"`
@@ -49,7 +67,7 @@ func main() {
 		Addr:    ":8011",
 		Handler: mux,
 	}
-	mux.Handle("/", http.FileServer(http.Dir("static")))
+	mux.Handle("/", http.FileServer(http.Dir(resolveStaticDir())))
 	mux.HandleFunc("/ws", server_datatypes.HandleWS)
 
 	mux.HandleFunc("/add_path", func(w http.ResponseWriter, r *http.Request) {
