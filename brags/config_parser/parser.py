@@ -1,5 +1,4 @@
 import yaml
-from pathlib import Path
 
 from .data_types import RAGConfig
 

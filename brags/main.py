@@ -97,7 +97,7 @@ def main():
 
     qa, logger = get_qa_object(config_path=args.config, docs_path=args.docs)
 
-    if args.query != None:
+    if args.query is not None:
         logger.info(f"Asking query: {args.query}")
         res = qa(args.query)
         logger.info(f"Got result: {res}")

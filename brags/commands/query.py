@@ -1,13 +1,8 @@
 from pathlib import Path
 import logging
 
-
 from ..config_parser.parser import load_config
-from ..factories.embedding.embeddingFactory import EmbeddingFactory
-from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
-from ..pipeline.assembler import get_docs
 from ..config_parser.data_types import RAGConfig
-from ..config_parser.parser import load_config
 from ..utils.logging_setup import setup_logging
 from ..pipeline.assembler import get_docs, build_qa_system
 
@@ -40,7 +35,7 @@ def run(args):
     qa, logger = get_qa_object(config_path=args.config, docs_path=args.docs)
     logger.info(f"Querying with: {args.query} using config {args.config}")
 
-    if args.query != None:
+    if args.query is not None:
         logger.info(f"Asking query: {args.query}")
         res = qa(args.query)
         logger.info(f"Got result: {res}")

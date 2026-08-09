@@ -7,7 +7,6 @@ from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
 from ..pipeline.assembler import get_docs
 from ..config_parser.data_types import RAGConfig
-from ..config_parser.parser import load_config
 from ..utils.logging_setup import setup_logging
 
 def add_parser(subparsers):

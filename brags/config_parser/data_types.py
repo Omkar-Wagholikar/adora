@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Any, Optional, Dict
 
 class LLMConfig(BaseModel):
