@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 from pathlib import Path
@@ -8,11 +9,17 @@ from brags.factories.embedding.embeddingFactory import EmbeddingFactory
 from brags.pipeline.assembler import get_docs
 from brags.utils.logging_setup import setup_logging
 
+# This script is invoked by the Go watcher (go/callPython/performFileOp.go) as a
+# standalone subprocess, so it can't rely on the caller's working directory.
+# BRAGS_CONFIG_PATH lets a deployment point at a specific config; otherwise fall
+# back to the config that lives next to this script in the source/build tree.
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "brags" / "rag_config.yaml"
+
 
 def update_vector_store(event_type: str, file_path: str):
-    # Load YAML config
-    config:RAGConfig = load_config("/home/omkar/rag_check/brags/brags/rag_config.yaml")
-    
+    config_path = os.environ.get("BRAGS_CONFIG_PATH", str(DEFAULT_CONFIG_PATH))
+    config: RAGConfig = load_config(config_path)
+
     setup_logging(config.logging)
     logger = logging.getLogger("update_vector_store")
 
@@ -29,7 +36,7 @@ def update_vector_store(event_type: str, file_path: str):
 
     elif event_type in ("REMOVE", "RENAME"):
         logger.info(f"Removing file from vector store: {file_path}")
-        
+        vector_store.remove_by_path(embedder, file_path)
 
     else:
         logger.info(f"Unhandled event: {event_type}")
