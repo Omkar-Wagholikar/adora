@@ -129,22 +129,6 @@ func (wm *WatcherManager) LoadWatchers() error {
 	return nil
 }
 
-func AppendWatcherToFile(watcher *server.WatchEntry) error {
-	file, err := os.OpenFile("/home/omkar/rag_check/brags/brags/bin/ActiveWatcherList", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	data, err := json.Marshal(watcher)
-	if err != nil {
-		return err
-	}
-
-	_, err = file.WriteString(string(data) + "\n")
-	return err
-}
-
 func ListAllWatchers() ([]server.WatchEntry, error) {
 	log.Println("ListAllWatchers started")
 	log.Println("Getting file")

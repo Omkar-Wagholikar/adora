@@ -30,20 +30,16 @@ def run(args):
     logger = logging.getLogger("INIT") 
 
     logger.info("Running Brags init...")
-    server_prev_working = True
     if not check_server_status():
-        server_prev_working = False
         logger.info("Server not detected. Attempting to start...")
-        server_path = "/home/omkar/rag_check/brags/brags/bin/server_executable"
-        create_active_watcher_if_not_exist = open("/home/omkar/rag_check/brags/brags/bin/ActiveWatcherList", "r+")
+        server_path = str(Path(__file__).parent.parent / "bin" / "server_executable")
         logger.info("spawning server")
         spawn_server(server_path)
         logger.info("going to sleep")
         time.sleep(10)
         logger.info("woke up")
 
-
-        if not server_prev_working and check_server_status():
+        if check_server_status():
             print("Server successfully started and is now running.")
             return
         else:
