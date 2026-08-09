@@ -29,10 +29,8 @@ def build_qa_system(config: RAGConfig, documents: Optional[list]):
     embedder = EmbeddingFactory.create(config=config.embedding).create()
     
     # Create vectorstore
-    # vector = FAISS.from_documents(documents, embedder)
-    # retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
     vector = VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=documents, save_if_not_local=config.vector_store.save_if_not_local)
-    retriever = vector.as_retriever()
+    retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
 
     # Create LLM
     llm = LLMFactory.create(config.llm).create()
