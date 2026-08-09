@@ -55,7 +55,10 @@ vector_store:
   persist_path: "./vector_db"
   similarity_metric: "cosine"
   top_k: 5
-  allow_dangerous_deserialization: true
+  # FAISS.load_local() uses pickle under the hood; setting this true lets a
+  # tampered or untrusted index.pkl execute arbitrary code when loaded.
+  # Only enable it if you trust the source of every file under persist_path.
+  allow_dangerous_deserialization: false
   save_if_not_local: false
 # ----------------------------
 # DOCUMENT CHUNKING CONFIGURATION
