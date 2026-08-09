@@ -65,6 +65,15 @@ func (wm *WatcherManager) syncWatchersToFile() error {
 
 	// Write all watchers to temp file
 	for _, watcher := range wm.activeWatchers {
+		// For cron watchers, the authoritative LastUpdate state lives inside
+		// cronScheduler (mutated concurrently by each cron tick), not in this
+		// slice. Pull a lock-protected snapshot instead of reading/marshaling
+		// wm.activeWatchers' own copy, which is never updated after AddWatcher
+		// and would otherwise require sharing the live map across goroutines.
+		if watcher.WatcherType == "cron" {
+			watcher.LastUpdate = wm.cronScheduler.GetLastUpdate(watcher.GivenPath)
+		}
+
 		log.Println("Writing activewatchers to temp file")
 		log.Println(">", watcher.LastUpdate)
 		data, err := json.Marshal(watcher)
