@@ -48,25 +48,31 @@ This generates `brags/bin/server_executable` (plus the static UI and `pythonFile
 pip install brags
 ```
 
-> **Note:** the version currently published on PyPI predates several fixes made in this
-> repository (real dependency declarations, a corrected Python version floor, portable
-> file paths) — a new version needs to be tagged and released before `pip install brags`
-> reflects them. Until then, prefer the source install above.
->
-> The published wheel also bundles a Go binary built for Linux. Installing on macOS or
-> Windows gets you the Python RAG pipeline, but the bundled `brags init` binary won't run
-> there — build `go/` from source on those platforms instead.
+PyPI publishes a separate wheel per platform (Linux/macOS/Windows, x86_64/arm64), each
+bundling a Go binary compiled for that target, so `brags init`'s spawned server works
+out of the box regardless of OS.
 
-### Optional: ensemble embeddings
+### Optional extras
 
-`EnsembleEmbedding` (TF-IDF + LDA + BM25 blended with dense embeddings) needs an extra
-dependency group not installed by default:
+A few features have dependencies that aren't installed by default, to keep the base
+install lighter:
 
 ```bash
-poetry install --with ensemble
-# or, with plain pip:
-pip install scikit-learn gensim rank-bm25
+# EnsembleEmbedding: TF-IDF + LDA + BM25 blended with dense embeddings
+pip install "brags[ensemble]"
+
+# chunking.splitter: code -- syntax-aware chunking via tree-sitter
+pip install "brags[code]"
+
+# `brags mcp` -- stdio MCP server exposing a read-only search tool
+pip install "brags[mcp]"
+
+# all of the above
+pip install "brags[ensemble,code,mcp]"
 ```
+
+From a source checkout, the poetry equivalent is `poetry install -E ensemble -E code -E mcp`
+(or `--all-extras`).
 
 ---
 
@@ -125,7 +131,34 @@ Sections include:
 * **logging** → level and log file path
 * **file\_watcher** → watcher type, path, debounce/cron config
 
-See [`rag_config.example.yaml`](brags/rag_config.example.yaml) for details.
+See [`rag_config.example.yaml`](brags/rag_config.example.yaml) for the prose/PDF
+profile, or [`rag_config.code.example.yaml`](brags/rag_config.code.example.yaml)
+for a profile tuned for indexing and searching a codebase instead (syntax-aware
+chunking, hybrid dense+keyword embeddings, reranking on by default -- each
+setting's comments explain why it differs from the prose profile).
+
+---
+
+## MCP server
+
+`brags mcp` runs brags as a stdio [MCP](https://modelcontextprotocol.io) server
+exposing a single read-only `search` tool -- similarity search (with reranking,
+if enabled) directly against the persisted vector store, returning raw chunks
+with source/line metadata rather than an LLM-summarized answer. Needs the `mcp`
+extra:
+
+```bash
+pip install "brags[mcp]"
+```
+
+Register it with Claude Code:
+
+```bash
+claude mcp add brags -- python -m brags mcp --config /path/to/rag_config.yaml
+```
+
+The index has to already exist (`brags ingest --docs /path/to/repo` first) --
+`brags mcp` only searches, it never ingests.
 
 ---
 

@@ -1,10 +1,16 @@
 # === RAG CONFIGURATION FILE ===
+#
+# This profile is tuned for prose/PDF document retrieval (the original use
+# case). For indexing and searching a codebase instead, start from
+# rag_config.code.example.yaml -- code retrieval wants different chunking,
+# embeddings, and reranking settings than prose does; see that file's
+# comments for why each setting differs.
 
 # ----------------------------
 # MODEL CONFIGURATION
 # ----------------------------
 llm:
-  provider: "gemini"  # Options: openai, ollama, huggingface, gemini
+  provider: "gemini"  # Options: gemini, ollama
   model_name: "gemini-2.0-flash"  # Example: gpt-3.5-turbo, llama3, mistral, gemini-pro, etc.
   temperature: 0.7
   max_tokens: 1024
@@ -23,7 +29,7 @@ llm:
 # EMBEDDING CONFIGURATION
 # ----------------------------
 embedding:
-  provider: "huggingface"  # huggingface, openai, etc.
+  provider: "huggingface"  # Options: huggingface (dense only), ensemble (dense + BM25/TF-IDF/LDA -- needs the "ensemble" extra, see README)
   model_name: "sentence-transformers/all-MiniLM-L6-v2"
   dimensions: 384
   normalize: true
@@ -51,7 +57,7 @@ embedding:
 # VECTOR STORE CONFIGURATION
 # ----------------------------
 vector_store:
-  type: "faiss"  # Options: faiss, chroma, qdrant, pinecone, weaviate
+  type: "faiss"  # Options: faiss, chroma
   persist_path: "./vector_db"
   similarity_metric: "cosine"
   top_k: 5
@@ -66,15 +72,20 @@ vector_store:
 chunking:
   chunk_size: 500
   chunk_overlap: 50
-  splitter: "recursive"  # Options: recursive, sentence, paragraph
+  splitter: "semantic"  # "semantic" (embedding-similarity chunking, for prose/PDF) or "code" (tree-sitter, syntax-aware -- see rag_config.code.example.yaml)
+  # languages: only consulted when splitter is "code"; see the code profile.
 
 # ----------------------------
 # RERANKING (Optional)
 # ----------------------------
 reranking:
   enabled: false
+  provider: "cross_encoder"
   model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
   top_k: 3
+  # Candidates over-fetched from the vector store before reranking down to
+  # top_k = vector_store.top_k * fetch_multiplier.
+  fetch_multiplier: 4
 
 # ----------------------------
 # HALLUCINATION CHECKER CONFIGURATION
@@ -88,7 +99,7 @@ hallucination_checker:
   threshold: 0.7
 
   # If using LLM for fact-checking
-  provider: "gemini"  # Options: openai, ollama, huggingface, gemini
+  provider: "gemini"  # Options: gemini, ollama
   model_name: "gemini-2.0-flash"  # Example: gpt-3.5-turbo, llama3, mistral, gemini-pro, etc.
   temperature: 0.7
   max_tokens: 1024
