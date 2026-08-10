@@ -38,3 +38,12 @@ ruff = "^0.6"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+# Pin an explicit rule selection instead of relying on whatever a given
+# ruff version's "default" happens to be: ruff 0.16.2 (what CI's fresh
+# `pip install ruff` pulls) enables a much broader default set than the
+# older ruff already installed locally when brags/ was cleaned up, so the
+# same command produced 0 errors locally and 78 in CI. This pins to
+# pyflakes + basic pycodestyle errors (ruff's long-standing classic
+# default) so `ruff check brags` means the same thing everywhere.
+select = ["E4", "E7", "E9", "F"]
