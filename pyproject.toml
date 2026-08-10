@@ -36,7 +36,15 @@ pytest = "^7.0"
 ruff = "^0.6"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+# Upper-bounded: brags/bin/* is bundled into the wheel via the `include`
+# directive above despite being .gitignore'd, and that only works because
+# poetry-core ~1.6 (what Poetry 1.5.1, pinned in release.yml, resolves)
+# lets an explicit `include` override VCS-ignore exclusion. Verified that
+# poetry-core 2.4.1 silently drops the file with no build error instead --
+# an unpinned upper bound here would let a future `pip install` resolve
+# into that range and start shipping wheels with no Go binary inside them,
+# with nothing in CI catching it.
+requires = ["poetry-core>=1.0.0,<2.0.0"]
 build-backend = "poetry.core.masonry.api"
 [tool.ruff.lint]
 # Pin an explicit rule selection instead of relying on whatever a given
