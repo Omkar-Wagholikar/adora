@@ -23,13 +23,15 @@ It combines Python for the RAG logic and a background **Go file watcher** that m
 
 ##  Installation
 
-Clone the repo and install using Poetry or pip:
+Requires **Python 3.10+**. Building the file-watcher binary from source also requires **Go 1.22+**.
+
+### From source (recommended)
 
 ```bash
-git clone https://github.com/omkar-wagholikar/brags.git
-cd brags
+git clone https://github.com/Omkar-Wagholikar/adora.git
+cd adora
 pip install -e .
-````
+```
 
 Build the Go watcher binary (required for background file monitoring):
 
@@ -38,7 +40,33 @@ cd go
 ./build.sh
 ```
 
-This will generate the watcher binary that `brags` runs in the background.
+This generates `brags/bin/server_executable` (plus the static UI and `pythonFiles/`, copied alongside it), which `brags init` spawns in the background.
+
+### From PyPI
+
+```bash
+pip install brags
+```
+
+> **Note:** the version currently published on PyPI predates several fixes made in this
+> repository (real dependency declarations, a corrected Python version floor, portable
+> file paths) — a new version needs to be tagged and released before `pip install brags`
+> reflects them. Until then, prefer the source install above.
+>
+> The published wheel also bundles a Go binary built for Linux. Installing on macOS or
+> Windows gets you the Python RAG pipeline, but the bundled `brags init` binary won't run
+> there — build `go/` from source on those platforms instead.
+
+### Optional: ensemble embeddings
+
+`EnsembleEmbedding` (TF-IDF + LDA + BM25 blended with dense embeddings) needs an extra
+dependency group not installed by default:
+
+```bash
+poetry install --with ensemble
+# or, with plain pip:
+pip install scikit-learn gensim rank-bm25
+```
 
 ---
 
