@@ -58,7 +58,7 @@ def get_qa_object(config_path: Path, docs_path: str | None = None):
     logger = logging.getLogger("QUERY") 
 
     logger.info("Running Brags...")
-    docs = get_docs(docs_path) if docs_path else None
+    docs = get_docs(docs_path, config) if docs_path else None
 
     logger.info("Setting up pipeline...")
     qa = build_qa_system(config=config, documents=docs)

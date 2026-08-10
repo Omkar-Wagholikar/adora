@@ -11,12 +11,27 @@ from ..config_parser.data_types import RAGConfig
 from ..factories.llm.llmFactory import LLMFactory
 from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
+from ..factories.reranking.rerankerFactory import RerankerFactory
 from ..factories.chains.safe_chain import SafeRetrievalQA
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def get_docs(path: str):
+def get_docs(path: str, config: RAGConfig):
+    if config.chunking.splitter == "code":
+        # Imported lazily: tree-sitter-language-pack lives in pyproject.toml's
+        # optional "code" poetry group, not the base install -- importing it
+        # at module load time would make every `brags` CLI invocation crash
+        # for anyone who installed brags without that extra group, the same
+        # bug fixed earlier for the "ensemble" embedding provider.
+        from .code_loader import load_code_documents
+        return load_code_documents(
+            path,
+            languages=config.chunking.languages,
+            chunk_size=config.chunking.chunk_size,
+            chunk_overlap=config.chunking.chunk_overlap,
+        )
+
     loader = PDFPlumberLoader(path)
     docs = loader.load()
     for d in docs:
@@ -70,3 +85,37 @@ def build_qa_system(config: RAGConfig, documents: Optional[list]):
     )
 
     return SafeRetrievalQA(qa)
+
+
+def retrieve_raw(config: RAGConfig, query: str, top_k: Optional[int] = None) -> list[dict]:
+    """Similarity search (with optional reranking) directly against the
+    persisted vector store, returning raw chunks -- no LLM involved. Used by
+    the MCP search tool, which wants source chunks back, not a re-summarized
+    answer.
+    """
+    embedder = EmbeddingFactory.create(config=config.embedding).create()
+    vector = VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=None)
+
+    if config.reranking.enabled:
+        final_k = top_k or config.reranking.top_k or config.vector_store.top_k
+        fetch_k = final_k * (config.reranking.fetch_multiplier or 1)
+    else:
+        final_k = top_k or config.vector_store.top_k
+        fetch_k = final_k
+
+    results = vector.similarity_search_with_score(query, k=fetch_k)
+    docs = [doc for doc, _ in results]
+
+    if config.reranking.enabled:
+        reranker = RerankerFactory.create(config.reranking)
+        reranked = reranker.rerank(query, docs, top_k=final_k)
+        return [
+            {"content": doc.page_content, "metadata": doc.metadata, "score": score}
+            for doc, score in reranked
+        ]
+
+    scores = {id(doc): float(score) for doc, score in results}
+    return [
+        {"content": doc.page_content, "metadata": doc.metadata, "score": scores.get(id(doc))}
+        for doc in docs[:final_k]
+    ]

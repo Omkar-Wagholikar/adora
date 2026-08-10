@@ -35,7 +35,7 @@ def run(args):
     logger.info(f"Ingesting documents from {args.docs} using config {args.config}")
     
     docs_path = args.docs
-    documents = get_docs(docs_path) if docs_path else None
+    documents = get_docs(docs_path, config) if docs_path else None
     embedder = EmbeddingFactory.create(config=config.embedding).create()
     VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=documents, save_if_not_local=config.vector_store.save_if_not_local)
     
