@@ -37,6 +37,17 @@ jobs:
           export CGO_ENABLED=1
           ./build.sh
 
+      - name: Set package version from tag
+        # pyproject.toml's `version` field was previously maintained by hand
+        # and repeatedly drifted out of sync with the pushed git tag (e.g.
+        # tags v0.0.6 through v0.0.9 all left version = "0.0.4", which
+        # v0.0.5 had already published) -- PyPI permanently rejects
+        # re-uploading a version that already exists, so most releases
+        # failed at the publish step with "File already exists". Deriving
+        # the version from the tag makes the tag the single source of
+        # truth and removes the manual-sync step entirely.
+        run: poetry version "${GITHUB_REF_NAME#v}"
+
       - name: Build wheel
         run: poetry build
 
@@ -66,8 +77,18 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          username: __token__
+          # The action's actual input is `user`, not `username` -- the old
+          # `username` key was silently ignored (confirmed via this job's
+          # own run annotations: "Unexpected input(s) 'username', valid
+          # inputs are ['user', 'password', ...]"), which disabled explicit
+          # token auth on every prior release.
+          user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+          # Defense in depth alongside the tag-driven versioning above: if a
+          # version is ever re-uploaded by accident, skip it instead of
+          # hard-failing the whole release (and blocking the GitHub Release
+          # step, which only runs after this one succeeds).
+          skip-existing: true
 
   github-release:
     name: GitHub Release
