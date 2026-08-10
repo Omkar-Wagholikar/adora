@@ -27,11 +27,13 @@ def print_rag_config(config: RAGConfig):
     print(f"\tchunk_size: {config.chunking.chunk_size}")
     print(f"\tchunk_overlap: {config.chunking.chunk_overlap}")
     print(f"\tsplitter: {config.chunking.splitter}")
+    print(f"\tlanguages: {config.chunking.languages}")
 
     print("\n" + "=" * 10, "RerankingConfig", "=" * 10)
     print(f"\tenabled: {config.reranking.enabled}")
     print(f"\tmodel_name: {config.reranking.model_name}")
     print(f"\ttop_k: {config.reranking.top_k}")
+    print(f"\tfetch_multiplier: {config.reranking.fetch_multiplier}")
 
     print("\n" + "=" * 10, "HallucinationCheckerConfig", "=" * 10)
     print(f"\tenabled: {config.hallucination_checker.enabled}")

@@ -33,13 +33,34 @@ class VectorStoreConfig(BaseModel):
 class ChunkingConfig(BaseModel):
     chunk_size: int
     chunk_overlap: int
+    # "semantic": embedding-similarity chunking over prose/PDF documents
+    # (the original, still-default behavior).
+    # "code": tree-sitter syntax-aware chunking that produces one chunk per
+    # function/class/method instead of arbitrary token windows -- chunk_size
+    # and chunk_overlap are unused in this mode, since chunk boundaries come
+    # from the parse tree rather than a token count.
     splitter: str
+    # Which tree-sitter-language-pack language ids to parse (e.g. "python",
+    # "go"); only consulted when splitter == "code". None means auto-detect
+    # each file's language from its extension.
+    languages: Optional[list[str]] = None
 
 
 class RerankingConfig(BaseModel):
     enabled: bool
-    model_name: Optional[str] = None
+    # Matches the provider-field convention used by LLMConfig/EmbeddingConfig/
+    # VectorStoreConfig; only "cross_encoder" exists today.
+    provider: Optional[str] = "cross_encoder"
+    model_name: Optional[str] = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    # Final number of results returned after reranking; defaults to
+    # vector_store.top_k when unset.
     top_k: Optional[int] = None
+    # Candidates pulled from the vector store before reranking down to
+    # top_k = vector_store.top_k * fetch_multiplier. Reranking can only
+    # reorder what it's given, so this needs to be larger than top_k for
+    # reranking to actually change the result set instead of just
+    # re-sorting it.
+    fetch_multiplier: Optional[int] = 4
 
 
 class HallucinationCheckerConfig(BaseModel):
