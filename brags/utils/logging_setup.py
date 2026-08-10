@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from ..config_parser.data_types import LoggingConfig
 
@@ -18,7 +19,10 @@ def setup_logging(config: LoggingConfig):
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         handlers.append(file_handler)
-        print(f"Logging to file: {config.log_file_path}")
+        # stderr, not stdout: `brags mcp` runs as a stdio MCP server, where
+        # stdout is the JSON-RPC transport channel -- any stray print() to
+        # stdout corrupts the protocol stream from the client's perspective.
+        print(f"Logging to file: {config.log_file_path}", file=sys.stderr)
 
     # A single basicConfig() call: logging.basicConfig() only takes effect
     # the *first* time it's called on a logger with no handlers (without
