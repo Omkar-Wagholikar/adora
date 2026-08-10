@@ -26,10 +26,38 @@ chromadb = "^0.5"
 sentence-transformers = "^5.1.0"
 pdfplumber = "^0.11"
 
-[tool.poetry.group.ensemble.dependencies]
-scikit-learn = "^1.5"
-gensim = "^4.3"
-rank-bm25 = "^0.2.2"
+# `optional = true` here plus the [tool.poetry.extras] table below (rather
+# than [tool.poetry.group.X.dependencies]) is what actually makes these
+# `pip install brags[ensemble]`-installable. Poetry dependency groups are a
+# poetry-workspace-only construct for `poetry install --with X` inside a
+# poetry-managed checkout -- they never appear in a published wheel's
+# requires_dist at all. Confirmed on the real published v0.1.5 wheel: its
+# PyPI metadata has zero trace of the (pre-existing) `ensemble` group,
+# meaning `pip install brags[ensemble]` has never actually worked for
+# anyone installing from PyPI.
+scikit-learn = {version = "^1.5", optional = true}
+gensim = {version = "^4.3", optional = true}
+rank-bm25 = {version = "^0.2.2", optional = true}
+
+# Only needed for `chunking.splitter: code` -- tree-sitter-language-pack
+# bundles prebuilt multi-language grammars (Python, Go, JS/TS, etc.) so we
+# don't have to depend on and version-pin each per-language grammar package
+# separately. The older `tree-sitter-languages` package this supersedes is
+# unmaintained and doesn't have a matching build for current tree-sitter
+# versions.
+tree-sitter = {version = "^0.25.0", optional = true}
+tree-sitter-language-pack = {version = "^1.14.0", optional = true}
+
+# Only needed for `brags mcp` (the stdio MCP server exposing retrieval to
+# MCP clients like Claude Code). Pinned below 2.0 -- that major version
+# landed the same day this was written, so this targets the well-established
+# 1.x API instead of a same-day major bump.
+mcp = {version = "^1.29.0", optional = true}
+
+[tool.poetry.extras]
+ensemble = ["scikit-learn", "gensim", "rank-bm25"]
+code = ["tree-sitter", "tree-sitter-language-pack"]
+mcp = ["mcp"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
