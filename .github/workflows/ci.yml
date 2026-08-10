@@ -21,7 +21,11 @@ jobs:
       - name: Install core dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest ruff pyyaml pydantic requests
+          pip install pytest ruff
+          # Installs brags itself (base deps + the "code"/"mcp" extras) so
+          # tests can exercise the real chunker/reranker/MCP-server code
+          # paths, not just pyyaml/pydantic-level schema tests.
+          pip install -e ".[code,mcp]"
 
       - name: Run tests
         run: pytest tests
