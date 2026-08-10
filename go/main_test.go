@@ -10,11 +10,10 @@ import (
 func timeRoughlyEqual(t1, t2 time.Time) bool {
 	// Round both times to the nearest second
 	time_diff := t1.Round(time.Second).Sub(t2.Round(time.Second))
-	if time_diff > 2 || time_diff < -2 {
+	if time_diff > 2*time.Second || time_diff < -2*time.Second {
 		return false
 	}
 	return true
-	// return t1.Round(time.Second).Equal(t2.Round(time.Second))
 }
 
 func TestSerialization(t *testing.T) {
