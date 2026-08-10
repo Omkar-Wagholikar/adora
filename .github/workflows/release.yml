@@ -8,6 +8,44 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # brags/bin/server_executable (built below) is a native binary bundled
+    # straight into the wheel, but a plain `poetry build` always produces a
+    # py3-none-any wheel -- which claims to run on every platform even
+    # though the binary inside only runs on whatever OS/arch built it. That
+    # previously meant `pip install brags` succeeded everywhere but `brags
+    # init` (which subprocess.Popen's this binary) crashed on anything but
+    # the linux/amd64 GitHub runner that built the release.
+    #
+    # The Go module has no cgo (no `import "C"`, all deps are pure Go), so
+    # CGO_ENABLED=0 cross-compiles a fully static binary for each target
+    # from this single Linux runner -- no per-platform C toolchain or
+    # native runner needed. Each leg then relabels its wheel's platform tag
+    # (poetry-core has no concept of "this pure-Python-looking wheel
+    # actually only works on macosx_11_0_arm64") with the `wheel tags` CLI,
+    # so pip picks the right one for each user's platform automatically.
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            wheel_tag: manylinux2014_x86_64
+            build_sdist: true
+          - goos: linux
+            goarch: arm64
+            wheel_tag: manylinux2014_aarch64
+            build_sdist: false
+          - goos: darwin
+            goarch: amd64
+            wheel_tag: macosx_10_15_x86_64
+            build_sdist: false
+          - goos: darwin
+            goarch: arm64
+            wheel_tag: macosx_11_0_arm64
+            build_sdist: false
+          - goos: windows
+            goarch: amd64
+            wheel_tag: win_amd64
+            build_sdist: false
 
     steps:
       - uses: actions/checkout@v4
@@ -27,14 +65,13 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y build-essential
-
-      - name: Build Go binaries
+      - name: Build Go binary for ${{ matrix.goos }}/${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
           cd go
           chmod +x build.sh
-          export CGO_ENABLED=1
           ./build.sh
 
       - name: Set package version from tag
@@ -49,12 +86,25 @@ jobs:
         run: poetry version "${GITHUB_REF_NAME#v}"
 
       - name: Build wheel
-        run: poetry build
+        run: poetry build --format wheel
+
+      - name: Build sdist
+        # Only one leg needs to produce the source distribution -- it's
+        # platform-independent, so building it in every matrix leg would
+        # just create duplicate dist/*.tar.gz files that collide once all
+        # artifacts are merged for publishing.
+        if: matrix.build_sdist
+        run: poetry build --format sdist
+
+      - name: Tag wheel as ${{ matrix.wheel_tag }}
+        run: |
+          pip install --quiet wheel
+          wheel tags --python-tag py3 --abi-tag none --platform-tag ${{ matrix.wheel_tag }} --remove dist/*-py3-none-any.whl
 
       - name: Upload distribution packages
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-package-distributions-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/
 
   publish-to-pypi:

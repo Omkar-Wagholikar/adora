@@ -1,4 +1,5 @@
 import logging
+import platform
 from pathlib import Path
 import sys
 import time
@@ -32,7 +33,8 @@ def run(args):
     logger.info("Running Brags init...")
     if not check_server_status():
         logger.info("Server not detected. Attempting to start...")
-        server_path = str(Path(__file__).parent.parent / "bin" / "server_executable")
+        binary_name = "server_executable.exe" if platform.system() == "Windows" else "server_executable"
+        server_path = str(Path(__file__).parent.parent / "bin" / binary_name)
         logger.info("spawning server")
         spawn_server(server_path)
         logger.info("going to sleep")

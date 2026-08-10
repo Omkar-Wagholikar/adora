@@ -8,16 +8,21 @@ cd "$(dirname "$0")"
 OUTDIR="../brags/bin"
 mkdir -p "$OUTDIR"
 
-echo "Building Go shared library for Linux..."
+# The module has no cgo (no `import "C"`, all deps are pure Go), so this
+# doesn't need to be enabled -- and disabling it lets GOOS/GOARCH below
+# cross-compile a fully static binary without a matching C cross-toolchain,
+# which is what makes building for macOS/Windows from a single Linux
+# runner possible.
+export CGO_ENABLED=0
 
-# Enable cgo and build as shared object (.so)
-# CGO_ENABLED=1 go build \
-#   -buildmode=c-shared \
-#   -o "$OUTDIR/libbrags.so" \
-#   ./main.go
-# echo "Build complete: $OUTDIR/libbrags.so"
-# cp index.html "$OUTDIR/index.html"
+EXT=""
+if [ "${GOOS:-}" = "windows" ]; then
+  EXT=".exe"
+fi
+
+echo "Building Go binary for ${GOOS:-$(go env GOOS)}/${GOARCH:-$(go env GOARCH)}..."
+
 cp -r ./static "$OUTDIR/static"
 cp -r ./pythonFiles "$OUTDIR/pythonFiles"
-go build -o "$OUTDIR/server_executable" "./main.go"
-echo "Build complete: $OUTDIR/server_executable"
+go build -o "$OUTDIR/server_executable$EXT" "./main.go"
+echo "Build complete: $OUTDIR/server_executable$EXT"
