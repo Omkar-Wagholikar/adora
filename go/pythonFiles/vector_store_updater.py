@@ -13,7 +13,14 @@ from brags.utils.logging_setup import setup_logging
 # standalone subprocess, so it can't rely on the caller's working directory.
 # BRAGS_CONFIG_PATH lets a deployment point at a specific config; otherwise fall
 # back to the config that lives next to this script in the source/build tree.
-DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "brags" / "rag_config.yaml"
+#
+# __file__ is .../brags/bin/pythonFiles/vector_store_updater.py in both a
+# source checkout and an installed package (build.sh copies pythonFiles/
+# into brags/bin/ either way), so parent.parent.parent is the `brags`
+# package directory itself -- rag_config.yaml lives directly under that, not
+# under an extra nested "brags" segment (previously computed
+# .../brags/brags/rag_config.yaml, which never existed).
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "rag_config.yaml"
 
 
 def update_vector_store(event_type: str, file_path: str):
