@@ -77,10 +77,13 @@ def load_code_documents(
     try:
         import tree_sitter_language_pack  # noqa: F401
     except ImportError as e:
+        # tree-sitter-language-pack is a base dependency, so this should
+        # never actually fire on a normal `pip install brags` -- surfaces a
+        # broken/incomplete install rather than a missing optional extra.
         raise ImportError(
-            "chunking.splitter: code requires the optional 'code' dependency "
-            'group. Install it with: pip install "brags[code]" (or, from a '
-            "poetry checkout: poetry install -E code)"
+            "tree-sitter-language-pack is missing despite being a base brags "
+            "dependency -- this install looks incomplete or corrupted. Try "
+            "reinstalling: pip install --force-reinstall brags"
         ) from e
 
     documents: list[Document] = []

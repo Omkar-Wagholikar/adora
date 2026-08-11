@@ -25,10 +25,10 @@ def run(args):
     logger = logging.getLogger("MCP")
     logger.info("Starting brags MCP server (stdio transport)...")
 
-    # Imported lazily: the `mcp` SDK lives in pyproject.toml's optional "mcp"
-    # poetry group, not the base install -- importing it at module load time
-    # would make every `brags` CLI invocation crash for anyone who installed
-    # brags without that extra group, the same bug fixed earlier for the
-    # "ensemble" embedding provider.
+    # Imported lazily to avoid paying the mcp SDK's import cost on every
+    # `brags` invocation regardless of subcommand -- it's a base dependency
+    # now (not an optional extra), but brags/__main__.py's command
+    # auto-discovery still eagerly imports every command module's top-level
+    # imports, so this only actually gets pulled in when `brags mcp` runs.
     from ..mcp.server import run as run_server
     run_server(config)

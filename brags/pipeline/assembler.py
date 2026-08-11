@@ -19,11 +19,12 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def get_docs(path: str, config: RAGConfig):
     if config.chunking.splitter == "code":
-        # Imported lazily: tree-sitter-language-pack lives in pyproject.toml's
-        # optional "code" poetry group, not the base install -- importing it
-        # at module load time would make every `brags` CLI invocation crash
-        # for anyone who installed brags without that extra group, the same
-        # bug fixed earlier for the "ensemble" embedding provider.
+        # Imported lazily to avoid paying tree-sitter-language-pack's import
+        # cost on every `brags` invocation regardless of subcommand -- it's a
+        # base dependency now (not an optional extra), but brags/__main__.py's
+        # command auto-discovery still eagerly imports every command module's
+        # top-level imports, so this only actually gets pulled in when
+        # chunking.splitter: code is configured and actually used.
         from .code_loader import load_code_documents
         return load_code_documents(
             path,

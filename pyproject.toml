@@ -10,6 +10,9 @@ include = [
     "brags/bin/*",
 ]
 
+[tool.poetry.scripts]
+brags = "brags.__main__:main"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 pydantic = "^2.11"
@@ -39,25 +42,27 @@ scikit-learn = {version = "^1.5", optional = true}
 gensim = {version = "^4.3", optional = true}
 rank-bm25 = {version = "^0.2.2", optional = true}
 
-# Only needed for `chunking.splitter: code` -- tree-sitter-language-pack
-# bundles prebuilt multi-language grammars (Python, Go, JS/TS, etc.) so we
-# don't have to depend on and version-pin each per-language grammar package
-# separately. The older `tree-sitter-languages` package this supersedes is
-# unmaintained and doesn't have a matching build for current tree-sitter
-# versions.
-tree-sitter = {version = "^0.25.0", optional = true}
-tree-sitter-language-pack = {version = "^1.14.0", optional = true}
+# Base deps, not optional: tree-sitter-language-pack bundles prebuilt
+# multi-language grammars (Python, Go, JS/TS, etc.) so we don't have to
+# depend on and version-pin each per-language grammar package separately.
+# The older `tree-sitter-languages` package this supersedes is unmaintained
+# and doesn't have a matching build for current tree-sitter versions.
+# Unlike `ensemble` (gensim/scikit-learn pull in a heavy, more niche
+# dependency chain), these plus `mcp` below are lightweight, no-compile,
+# prebuilt-wheel packages backing what are now core features (code-aware
+# chunking, the MCP server) rather than opt-in extras -- kept as unconditional
+# base deps so `brags --help`/`brags mcp`/code ingestion work out of the box.
+tree-sitter = "^0.25.0"
+tree-sitter-language-pack = "^1.14.0"
 
-# Only needed for `brags mcp` (the stdio MCP server exposing retrieval to
-# MCP clients like Claude Code). Pinned below 2.0 -- that major version
-# landed the same day this was written, so this targets the well-established
-# 1.x API instead of a same-day major bump.
-mcp = {version = "^1.29.0", optional = true}
+# Backs `brags mcp` (the stdio MCP server exposing retrieval to MCP clients
+# like Claude Code). Pinned below 2.0 -- that major version landed the same
+# day this was written, so this targets the well-established 1.x API instead
+# of a same-day major bump.
+mcp = "^1.29.0"
 
 [tool.poetry.extras]
 ensemble = ["scikit-learn", "gensim", "rank-bm25"]
-code = ["tree-sitter", "tree-sitter-language-pack"]
-mcp = ["mcp"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
