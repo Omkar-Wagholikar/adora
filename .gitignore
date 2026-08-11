@@ -11,6 +11,14 @@ testFiles/
 rag_logs.log
 vector_db/
 
+# Runtime state written by the Go server (go/main.go / go/watcherManager) --
+# regenerated fresh in whatever directory it's launched from, not meant to
+# be tracked (was previously committed by accident).
+ActiveWatcherList
+go_filewatcher.log
+brags/bin/go_filewatcher.log
+brags/bin/go_server_stdout.log
+
 # Packages
 *.egg
 *.egg-info
