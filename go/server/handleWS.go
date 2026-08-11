@@ -1,6 +1,7 @@
 package server
 
 import (
+	callpython "goHalf/callPython"
 	"goHalf/utils"
 	"io"
 	"log"
@@ -33,8 +34,12 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	// Create a mutex to synchronize writes to the WebSocket
 	var writeMutex sync.Mutex
 
-	// Start Python subprocess (REPL)
-	cmd := exec.Command("python", "-m", "brags", "query") // interactive
+	// Start Python subprocess (REPL). Uses the same BRAGS_PYTHON_EXECUTABLE
+	// resolution as the file watcher's ingestion bridge (callPython package)
+	// instead of a hardcoded "python" -- that literal command doesn't exist
+	// on every system (PEP 394 only guarantees "python3"), and even where it
+	// does, it may not be the interpreter brags is actually installed into.
+	cmd := exec.Command(callpython.ResolvePythonExecutable(), "-m", "brags", "query") // interactive
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Println("Failed to create stdin pipe:", err)
