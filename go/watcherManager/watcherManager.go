@@ -145,6 +145,16 @@ func ListAllWatchers() ([]server.WatchEntry, error) {
 	log.Println("Got file")
 
 	if err != nil {
+		// No file yet is the normal state on a fresh install -- nothing has
+		// ever called syncWatchersToFile(). main.go previously treated this
+		// the same as a real read error (permission denied, corrupted
+		// contents) and exited, which meant the server could never start
+		// for the first time on a machine without a human manually
+		// pre-creating an empty ActiveWatcherList file first.
+		if os.IsNotExist(err) {
+			log.Println("No ActiveWatcherList file yet -- starting with zero watchers")
+			return nil, nil
+		}
 		log.Println("Failed to open or create ActiveWatcherList")
 		return nil, err
 	}
