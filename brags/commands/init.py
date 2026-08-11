@@ -1,29 +1,42 @@
 import logging
 import platform
 from pathlib import Path
+import shutil
 import sys
 import time
-import requests
-import subprocess
 
 from ..config_parser.data_types import RAGConfig
 from ..config_parser.parser import load_config
 from ..utils.logging_setup import setup_logging
+from ..utils.server import check_server_status, spawn_server
 
 logger = None
+
+DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "rag_config.yaml"
+EXAMPLE_CONFIG_PATH = Path(__file__).parent.parent / "rag_config.example.yaml"
 
 def add_parser(subparsers):
     parser = subparsers.add_parser("init", help="Initialize configuration")
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path(__file__).parent.parent / "rag_config.yaml",
+        default=DEFAULT_CONFIG_PATH,
         help="Path to configuration YAML (default: rag_config.yaml in project root).",
     )
     parser.set_defaults(func=run)
 
 def run(args):
-    config_path=args.config
+    config_path = args.config
+
+    # Only bootstrap when the user left --config at its implicit default --
+    # an explicit path that happens not to exist (e.g. a typo) should still
+    # surface a real error rather than silently creating a file at the wrong
+    # location.
+    if config_path == DEFAULT_CONFIG_PATH and not config_path.exists():
+        shutil.copyfile(EXAMPLE_CONFIG_PATH, config_path)
+        print(f"No config found -- created a default one at {config_path}.")
+        print("Review it and set your LLM API keys before running ingest/query.")
+
     config: RAGConfig = load_config(config_path)
     
     setup_logging(config.logging)
@@ -49,43 +62,3 @@ def run(args):
             sys.exit(1)
 
     print("Server was already running")
-
-
-def spawn_server(server_path: str):
-    logger.info("Spawning Go server...")
-    try:
-        process = subprocess.Popen([server_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logger.info(f"Go server spawned with PID: {process.pid}")
-    except FileNotFoundError:
-        logger.info(f"Error: Executable not found at '{server_path}'.")
-        logger.info("Please ensure the Go executable is built and at the correct path.")
-        sys.exit(1)
-
-def check_server_status():
-    try:
-        logger.info("Making request to ping server...")
-        res = requests.get("http://localhost:8011/ping", timeout=2)
-        res.raise_for_status()
-
-        body = res.json()
-        message = body.get("message")
-
-        if message == "pong":
-            logger.info("Server is running and healthy.")
-            return True
-        else:
-            logger.error("Server responded unexpectedly. Message: '%s'", message)
-            return False
-
-    except requests.exceptions.RequestException as e:
-        # Network / HTTP / connection errors
-        logger.warning("Server not reachable: %s", str(e))
-        return False
-    except ValueError as e:
-        # JSON decode errors
-        logger.error("Invalid response from server: %s", str(e))
-        return False
-    except Exception as e:
-        # Catch-all (no console print)
-        logger.error("Unexpected error while checking server status: %s", str(e))
-        return False
