@@ -31,7 +31,7 @@ def update_vector_store(event_type: str, file_path: str):
 
     if event_type in ("CREATE", "WRITE"):
         logger.info(f"Adding/updating file in vector store: {file_path}")
-        docs = get_docs(file_path)
+        docs = get_docs(file_path, config)
         store = vector_store.create(embedder, docs, save_if_not_local=True)
 
     elif event_type in ("REMOVE", "RENAME"):
