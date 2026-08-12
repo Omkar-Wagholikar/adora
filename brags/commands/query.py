@@ -31,7 +31,7 @@ def add_parser(subparsers):
     )
     parser.set_defaults(func=run)
 
-def run(args):    
+def run(args):
     qa, logger = get_qa_object(config_path=args.config, docs_path=args.docs)
     logger.info(f"Querying with: {args.query} using config {args.config}")
 
@@ -39,17 +39,34 @@ def run(args):
         logger.info(f"Asking query: {args.query}")
         res = qa(args.query)
         logger.info(f"Got result: {res}")
+        print_result(res)
 
-        logger.info("=== Answer ===")
-        logger.info(res['result'])
-        logger.info("==============")
-        print(f"Answer: {res['result']}\n")
-    
     else:
         logger.info("Initiating REPL")
         repl(qa, logger)
 
     logger.info("query complete completed")
+
+
+def print_result(res: dict):
+    # SafeRetrievalQA (safe_chain.py) catches errors at the LLM/combine step
+    # -- an invalid API key, a rate limit, etc. -- and falls back to
+    # "I don't know" with no other detail. Retrieval itself may well have
+    # succeeded even though the LLM call failed, so show the real error and
+    # whatever chunks were retrieved instead of a bare, undiagnosable
+    # "I don't know".
+    if res.get("error"):
+        print(f"No answer available -- the LLM step failed: {res['error']}\n")
+        docs = res.get("source_documents") or []
+        if docs:
+            print(f"Retrieved {len(docs)} relevant chunk(s) (no LLM summary, since that step failed):\n")
+            for doc in docs:
+                source = doc.metadata.get("source", "unknown")
+                print(f"--- {source} ---\n{doc.page_content}\n")
+        else:
+            print("No chunks were retrieved either.\n")
+    else:
+        print(f"Answer: {res['result']}\n")
 
 def get_qa_object(config_path: Path, docs_path: str | None = None):
     config: RAGConfig = load_config(config_path)
@@ -80,10 +97,8 @@ def repl(qa, logger):
             logger.info(f"Asking query: {query}")
             try:
                 res = qa(query)
-                logger.info("=== Answer ===")
-                logger.info(res["result"])
-                logger.info("==============")
-                print(f"Answer: {res['result']}\n")
+                logger.info(f"Got result: {res}")
+                print_result(res)
             except Exception as e:
                 logger.error(f"Error while processing query: {e}", exc_info=True)
                 print(f"Error: {e}")

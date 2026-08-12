@@ -7,11 +7,20 @@ class SafeRetrievalQA:
         try:
             return self.qa_chain(query)
         except Exception as e:
-            print("There seems to be some error")
+            # The exception could come from either the retriever or the LLM
+            # combine step -- most commonly the latter (bad/missing API key,
+            # rate limit), in which case retrieval itself likely succeeded.
+            # Re-running just the retriever (cheap, already fully
+            # configured) means callers still get real chunks back instead
+            # of an unconditionally empty source_documents list.
+            try:
+                source_documents = self.qa_chain.retriever.invoke(query)
+            except Exception:
+                source_documents = []
             return {
                 "result": self.default_answer,
-                "source_documents": [],
-                "error": str(e),  # optional: remove if you want it silent
+                "source_documents": source_documents,
+                "error": str(e),
             }
 
     def run(self, query: str):
