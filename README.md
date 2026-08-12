@@ -9,14 +9,15 @@ It combines Python for the RAG logic and a background **Go file watcher** that m
 ##  Features
 
 -  **Config-driven RAG setup** (`rag_config.yaml`)
--  **Pluggable embeddings** (HuggingFace, OpenAI, etc.)
--  **Flexible LLM providers** (OpenAI, Gemini, Ollama, HuggingFace)
--  **Multiple vector stores** (FAISS, Chroma, Qdrant, Pinecone, Weaviate)
+-  **Pluggable embeddings** (HuggingFace dense, or an ensemble of dense + BM25/TF-IDF/LDA)
+-  **Flexible LLM providers** (Gemini, Ollama, Claude, OpenAI)
+-  **Two vector stores** (FAISS, Chroma)
+-  **Syntax-aware code chunking** (tree-sitter, across Python/Go/JS/TS/Java/Rust/C/C++/Ruby) alongside the original semantic prose/PDF chunking
 -  **Two file watcher modes**:
   - **Persistent (event-driven)** → watches changes in real time via `fsnotify`
-  - **Cron (polling-based)** → scans folder at regular intervals
--  **Chunking and reranking** options
--  **Hallucination checking** with embedding similarity or LLM-based fact checking
+  - **Cron (polling-based)** → scans folder at regular intervals for PDF files
+-  **Cross-encoder reranking**
+-  **An MCP server** (`brags mcp`) exposing read-only retrieval to Claude Code and other MCP clients
 -  **Configurable logging & monitoring**
 
 ---
@@ -28,8 +29,8 @@ Requires **Python 3.10+**. Building the file-watcher binary from source also req
 ### From source (recommended)
 
 ```bash
-git clone https://github.com/Omkar-Wagholikar/adora.git
-cd adora
+git clone https://github.com/Omkar-Wagholikar/brags.git
+cd brags
 pip install -e .
 ```
 
@@ -54,66 +55,69 @@ out of the box regardless of OS.
 
 ### Optional extras
 
-A few features have dependencies that aren't installed by default, to keep the base
-install lighter:
+`pip install brags` already includes code-aware chunking (tree-sitter) and the MCP server
+(`brags mcp`) -- both are base dependencies, not opt-in extras. The only remaining optional
+dependency group is `ensemble` embeddings (TF-IDF + LDA + BM25 blended with dense
+embeddings), which pulls in a heavier dependency chain (`gensim`, `scikit-learn`) than the
+rest of the package:
 
 ```bash
-# EnsembleEmbedding: TF-IDF + LDA + BM25 blended with dense embeddings
 pip install "brags[ensemble]"
-
-# chunking.splitter: code -- syntax-aware chunking via tree-sitter
-pip install "brags[code]"
-
-# `brags mcp` -- stdio MCP server exposing a read-only search tool
-pip install "brags[mcp]"
-
-# all of the above
-pip install "brags[ensemble,code,mcp]"
 ```
 
-From a source checkout, the poetry equivalent is `poetry install -E ensemble -E code -E mcp`
-(or `--all-extras`).
+From a source checkout, the poetry equivalent is `poetry install -E ensemble` (or
+`--all-extras`).
 
 ---
 
 ##  Quick Start
 
-1. Copy the example config:
+1. Bootstrap a config -- first run creates a default `rag_config.yaml` for you (inside
+   the installed package directory) and starts the background Go watcher server:
 
 ```bash
-cp brags/rag_config.example.yaml brags/rag_config.yaml
+brags init
 ```
 
-2. Edit `rag_config.yaml` with your model, embeddings, and file watcher preferences:
-
-```yaml
-file_watcher:
-  type: "persistent"   # Options: persistent, cron
-  watch_dir: "./watched"
-  pattern: "*.txt"
-  cron_schedule: "*/3 * * * * *"  # Only for cron watcher
-  debounce_seconds: 1             # Only for persistent watcher
-```
-
-3. Run your RAG system:
+2. Either ingest once, or register a directory to be watched and auto-re-indexed on every
+   change:
 
 ```bash
-python -m brags.main
+# one-shot ingestion
+brags ingest --docs /path/to/your/docs-or-repo
+
+# OR: live-watched, auto re-indexes on file change (starts the server if needed)
+brags watch /path/to/your/docs-or-repo
 ```
 
-The Go watcher will start in the background, monitor your documents folder, and update your vector DB whenever files change.
+3. Query it:
+
+```bash
+brags query --query "your question here"
+```
+
+Editing `rag_config.yaml` (found via `python3 -c "import brags, os;
+print(os.path.dirname(brags.__file__))"` if you're not sure where it landed) lets you set
+your LLM provider/API keys, embedding model, and switch `chunking.splitter` between
+`semantic` (prose/PDF, the default) and `code` (syntax-aware, for indexing a codebase --
+see `rag_config.code.example.yaml` for a ready-made profile). File watching itself is
+registered at runtime via `brags watch <path>`, not through the config file.
 
 ---
 
 ##  Project Structure
 
 ```
-brags/                # Python package
-go/                   # Go watchers + Python callback
-tests/                # Unit tests
-vector_db/            # Local FAISS indexes
-rag_config.yaml       # Main configuration file
+brags/                # Python package (commands, factories, pipeline, MCP server)
+brags/rag_config.example.yaml       # Prose/PDF config profile, copied by `brags init`
+brags/rag_config.code.example.yaml  # Code-retrieval config profile
+go/                    # Go file watcher + web UI + Python bridge ("goHalf" module)
+tests/                 # Python unit tests (pytest)
 ```
+
+`rag_config.yaml` (your actual config) and any vector store index directory aren't part of
+the repo -- they're created at runtime, by default inside the installed package directory
+and wherever `vector_store.persist_path` points, respectively.
 
 ---
 
@@ -122,14 +126,16 @@ rag_config.yaml       # Main configuration file
 All behavior is controlled via `rag_config.yaml`.
 Sections include:
 
-* **llm** → provider, model, API keys
-* **embedding** → embedding model & dimensions
-* **vector\_store** → FAISS, Chroma, etc.
-* **chunking** → chunk size, overlap, splitter
-* **reranking** → reranker model
-* **hallucination\_checker** → method + provider
+* **llm** → provider (gemini/ollama/claude/openai), model, API keys
+* **embedding** → provider (huggingface/ensemble), model & dimensions
+* **vector\_store** → faiss or chroma, persist path, top\_k
+* **chunking** → chunk size, overlap, splitter (semantic or code)
+* **reranking** → cross-encoder reranking, on by default in the code profile
 * **logging** → level and log file path
-* **file\_watcher** → watcher type, path, debounce/cron config
+
+(`hallucination_checker` is present in the schema but not yet wired up to anything --
+setting it doesn't currently change behavior. File watching is a runtime action, not a
+config section -- see `brags watch --help`.)
 
 See [`rag_config.example.yaml`](brags/rag_config.example.yaml) for the prose/PDF
 profile, or [`rag_config.code.example.yaml`](brags/rag_config.code.example.yaml)
@@ -144,17 +150,12 @@ setting's comments explain why it differs from the prose profile).
 `brags mcp` runs brags as a stdio [MCP](https://modelcontextprotocol.io) server
 exposing a single read-only `search` tool -- similarity search (with reranking,
 if enabled) directly against the persisted vector store, returning raw chunks
-with source/line metadata rather than an LLM-summarized answer. Needs the `mcp`
-extra:
-
-```bash
-pip install "brags[mcp]"
-```
+with source/line metadata rather than an LLM-summarized answer.
 
 Register it with Claude Code:
 
 ```bash
-claude mcp add brags -- python -m brags mcp --config /path/to/rag_config.yaml
+claude mcp add brags -- brags mcp --config /path/to/rag_config.yaml
 ```
 
 The index has to already exist (`brags ingest --docs /path/to/repo` first) --
