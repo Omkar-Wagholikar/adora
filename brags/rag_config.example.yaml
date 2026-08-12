@@ -10,14 +10,21 @@
 # MODEL CONFIGURATION
 # ----------------------------
 llm:
-  provider: "gemini"  # Options: gemini, ollama
-  model_name: "gemini-2.0-flash"  # Example: gpt-3.5-turbo, llama3, mistral, gemini-pro, etc.
+  provider: "gemini"  # Options: gemini, ollama, claude, openai
+  model_name: "gemini-2.0-flash"  # Example: gemini-2.0-flash (gemini), llama3 (ollama), claude-sonnet-5 (claude), gpt-5.6 (openai)
   temperature: 0.7
   max_tokens: 1024
 
+  # openai_api_key/gemini_api_key/anthropic_api_key are all optional -- if
+  # omitted (or left as this placeholder), the underlying SDK falls back to
+  # reading OPENAI_API_KEY/GEMINI_API_KEY/ANTHROPIC_API_KEY from the
+  # environment automatically. The "claude" provider uses the
+  # anthropic_api_key entry (matching ANTHROPIC_API_KEY, the env var it
+  # actually falls back to), not a "claude_api_key" entry.
   api_keys:
     openai_api_key: API_KEY
     gemini_api_key: API_KEY
+    anthropic_api_key: API_KEY
 
   # Only needed if provider is huggingface
   huggingface_api_token: HF_TOKEN

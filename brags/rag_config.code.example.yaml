@@ -5,17 +5,19 @@
 # rag_config.yaml (or point --config at it directly) before running
 # `brags ingest --docs /path/to/repo` and `brags mcp` / `brags query`.
 #
-# Needs the "code" extra for chunking.splitter: code, and (if reranking is
-# left enabled, as below) sentence-transformers' CrossEncoder -- already a
-# base dependency, no extra needed for that part:
-#   pip install "brags[code]"
+# chunking.splitter: code and reranking's CrossEncoder are both base
+# dependencies -- a plain `pip install brags` covers this whole profile.
 
 llm:
-  provider: "gemini"  # Options: gemini, ollama
-  model_name: "gemini-2.0-flash"
+  provider: "gemini"  # Options: gemini, ollama, claude, openai
+  model_name: "gemini-2.0-flash"  # Example: gemini-2.0-flash (gemini), llama3 (ollama), claude-sonnet-5 (claude), gpt-5.6 (openai)
   temperature: 0.2  # Lower than the prose default -- code Q&A wants precise, literal answers, not creative phrasing.
   max_tokens: 1024
 
+  # Optional -- omit (or leave as a placeholder) to fall back to the
+  # OPENAI_API_KEY/GEMINI_API_KEY/ANTHROPIC_API_KEY environment variables
+  # instead. "claude" uses anthropic_api_key here, matching the env var it
+  # falls back to.
   api_keys:
     gemini_api_key: API_KEY
 
