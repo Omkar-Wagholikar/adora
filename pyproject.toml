@@ -23,6 +23,16 @@ langchain-community = "^0.3.29"
 langchain-core = "^0.3.75"
 langchain-experimental = "^0.3.4"
 langchain-google-genai = "^2.1.10"
+# Pinned to the last 0.3.x releases, not latest: langchain-anthropic 1.5.5 /
+# langchain-openai 1.4.3 both require langchain-core>=1.5,<2.0, which
+# conflicts with this project's langchain-core ceiling (^0.3.75, i.e.
+# <0.4.0) and would break dependency resolution entirely. The 0.3.x line
+# (langchain-anthropic 0.3.22, langchain-openai 0.3.35) requires
+# langchain-core<1.0,>=0.3.78, which the already-pinned langchain-core
+# satisfies. Verified against real PyPI metadata, not assumed from version
+# numbers alone.
+langchain-anthropic = "^0.3.22"
+langchain-openai = "^0.3.35"
 langchain-text-splitters = "^0.3.11"
 faiss-cpu = "^1.12.0"
 chromadb = "^0.5"
