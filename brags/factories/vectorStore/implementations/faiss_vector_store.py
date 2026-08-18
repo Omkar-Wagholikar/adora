@@ -14,6 +14,11 @@ class FaissVectorStore(BaseVectorStore):
         self.logger = logging.getLogger("FaissVectorStore")
 
     def create(self, embedder, documents=None, save_if_not_local=False):
+        if documents:
+            for d in documents:
+                if "source" not in d.metadata:
+                    d.metadata["source"] = "unknown"
+
         try:
             # Try to load existing store
             store = FAISS.load_local(
@@ -22,24 +27,36 @@ class FaissVectorStore(BaseVectorStore):
                 allow_dangerous_deserialization=self.config.allow_dangerous_deserialization,
             )
             self.logger.info("FaissVectorStore: Loaded existing vector store from disk")
+
+            if documents:
+                store.add_documents(documents)
+                self.logger.info("FaissVectorStore: Added new documents to existing store")
         except Exception as e:
-            dummy_doc = Document(page_content="dummy", metadata={"source": "dummy"})
-            store = FAISS.from_documents([dummy_doc], embedder, )
-            self.logger.info(f"FaissVectorStore: No existing store found, creating new one. Reason: {e}")
+            if documents:
+                # Build the fresh store straight from the real documents --
+                # seeding it with a "dummy" placeholder Document (the
+                # previous approach) left that placeholder permanently
+                # polluting every future similarity search alongside genuine
+                # results, since nothing ever removed it once real
+                # documents were added.
+                store = FAISS.from_documents(documents, embedder)
+                self.logger.info(
+                    f"FaissVectorStore: No existing store found, created new one from "
+                    f"{len(documents)} document(s). Reason: {e}"
+                )
+            else:
+                dummy_doc = Document(page_content="dummy", metadata={"source": "dummy"})
+                store = FAISS.from_documents([dummy_doc], embedder)
+                self.logger.info(
+                    f"FaissVectorStore: No existing store and no documents to ingest -- "
+                    f"creating empty placeholder store. Reason: {e}"
+                )
 
-        if documents:
-            for d in documents:
-                if "source" not in d.metadata:
-                    d.metadata["source"] = "unknown"
-                    
-            # Add new docs
-            store.add_documents(documents)
-            self.logger.info("FaissVectorStore: Added new documents to existing store")
+        if documents and save_if_not_local and self.config.persist_path:
+            os.makedirs(self.config.persist_path, exist_ok=True)
+            store.save_local(self.config.persist_path)
+            self.logger.info("FaissVectorStore: Saving updated store to disk complete")
 
-            if save_if_not_local and self.config.persist_path:
-                os.makedirs(self.config.persist_path, exist_ok=True)
-                store.save_local(self.config.persist_path)
-                self.logger.info("FaissVectorStore: Saving updated store to disk complete")
         return store
         
     def remove_by_path(self, embedder, path: str):

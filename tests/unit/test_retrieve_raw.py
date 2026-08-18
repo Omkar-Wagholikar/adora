@@ -84,3 +84,14 @@ class TestRetrieveRaw(unittest.TestCase):
         results = retrieve_raw(self.config, "function that greets someone", top_k=1)
         self.assertEqual(len(results), 1)
         self.assertIn("greet", results[0]["content"])
+
+    def test_fresh_store_does_not_leak_dummy_placeholder(self):
+        # FaissVectorStore.create used to always seed a brand-new store with
+        # a {"source": "dummy"} placeholder Document before adding the real
+        # ones, and nothing ever removed it -- every subsequent search
+        # returned it alongside genuine results. Once real documents are
+        # supplied, the store should be built from them directly.
+        results = retrieve_raw(self.config, "greet add function", top_k=5)
+        contents = [r["content"] for r in results]
+        self.assertNotIn("dummy", contents)
+        self.assertEqual(len(results), 2)
