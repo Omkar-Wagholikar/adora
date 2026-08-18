@@ -70,9 +70,17 @@ vector_store:
   top_k: 5
   # FAISS.load_local() uses pickle under the hood; setting this true lets a
   # tampered or untrusted index.pkl execute arbitrary code when loaded.
-  # Only enable it if you trust the source of every file under persist_path.
-  allow_dangerous_deserialization: false
-  save_if_not_local: false
+  # Defaults to true here because persist_path is a store `brags ingest`
+  # creates itself on this machine -- there's nothing untrusted to load
+  # unless you've pointed persist_path at a directory someone else wrote to,
+  # in which case set this back to false.
+  allow_dangerous_deserialization: true
+  # true so that `brags ingest` and a later `brags query`/`brags watch`
+  # invocation (separate processes) actually share what got embedded --
+  # left false, ingest embeds documents but never writes them to
+  # persist_path, so the very next query finds no store and answers
+  # "I don't know".
+  save_if_not_local: true
 # ----------------------------
 # DOCUMENT CHUNKING CONFIGURATION
 # ----------------------------
