@@ -4,8 +4,9 @@ from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.prompts import PromptTemplate
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_community.document_loaders import PDFPlumberLoader
+from langchain_community.document_loaders import PDFPlumberLoader, TextLoader
 from typing import Optional
+import os
 
 from ..config_parser.data_types import RAGConfig
 from ..factories.llm.llmFactory import LLMFactory
@@ -33,7 +34,13 @@ def get_docs(path: str, config: RAGConfig):
             chunk_overlap=config.chunking.chunk_overlap,
         )
 
-    loader = PDFPlumberLoader(path)
+    # PDFPlumberLoader only understands actual PDF bytes -- pointing it at a
+    # .txt (or any other plain-text) file blows up with a pdfminer
+    # PDFSyntaxError instead of ingesting it, even though "text, etc." is
+    # part of the advertised --docs contract (see commands/ingest.py). Only
+    # .pdf gets the PDF-specific loader; everything else is read as text.
+    _, ext = os.path.splitext(path)
+    loader = PDFPlumberLoader(path) if ext.lower() == ".pdf" else TextLoader(path)
     docs = loader.load()
     for d in docs:
         if "source" not in d.metadata:
