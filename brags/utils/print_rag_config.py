@@ -1,14 +1,25 @@
 from brags.config_parser.data_types import RAGConfig
 
 
+def _redact_secrets(value):
+    """Replaces secret values with a redacted placeholder that still shows
+    whether a key was actually configured, without ever printing it.
+    """
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return {k: ("<redacted>" if v else v) for k, v in value.items()}
+    return "<redacted>" if value else value
+
+
 def print_rag_config(config: RAGConfig):
     print("=" * 10, "LLM", "=" * 10)
     print(f"\tprovider: {config.llm.provider}")
     print(f"\tmodel_name: {config.llm.model_name}")
     print(f"\ttemperature: {config.llm.temperature}")
     print(f"\tmax_tokens: {config.llm.max_tokens}")
-    print(f"\tapi_keys: {config.llm.api_keys}")
-    print(f"\thuggingface_api_token: {config.llm.huggingface_api_token}")
+    print(f"\tapi_keys: {_redact_secrets(config.llm.api_keys)}")
+    print(f"\thuggingface_api_token: {_redact_secrets(config.llm.huggingface_api_token)}")
     print(f"\tollama_host: {config.llm.ollama_host}")
 
     print("\n" + "=" * 10, "EmbeddingConfig", "=" * 10)
@@ -44,8 +55,8 @@ def print_rag_config(config: RAGConfig):
     print(f"\tmodel_name: {config.hallucination_checker.model_name}")
     print(f"\ttemperature: {config.hallucination_checker.temperature}")
     print(f"\tmax_tokens: {config.hallucination_checker.max_tokens}")
-    print(f"\tapi_keys: {config.hallucination_checker.api_keys}")
-    print(f"\thuggingface_api_token: {config.hallucination_checker.huggingface_api_token}")
+    print(f"\tapi_keys: {_redact_secrets(config.hallucination_checker.api_keys)}")
+    print(f"\thuggingface_api_token: {_redact_secrets(config.hallucination_checker.huggingface_api_token)}")
     print(f"\tollama_host: {config.hallucination_checker.ollama_host}")
     print(f"\tprompt_template: {config.hallucination_checker.prompt_template}")
 
