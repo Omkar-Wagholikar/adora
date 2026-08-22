@@ -55,9 +55,9 @@ vector_store:
   # focused chunk per function/method, so each hit carries more relevant
   # signal than a prose chunk does -- fewer, more precise results.
   top_k: 4
-  # See rag_config.example.yaml's comment -- true because persist_path here
-  # is a store `brags ingest` creates itself on this machine.
-  allow_dangerous_deserialization: true
+  # See rag_config.example.yaml's comment -- defaults to false; flip to true
+  # only after confirming you trust every file currently under persist_path.
+  allow_dangerous_deserialization: false
   save_if_not_local: true
 
 # ----------------------------
