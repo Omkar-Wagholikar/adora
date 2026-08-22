@@ -13,7 +13,9 @@ from ..factories.llm.llmFactory import LLMFactory
 from ..factories.embedding.embeddingFactory import EmbeddingFactory
 from ..factories.vectorStore.vector_store_factory import VectorStoreFactory
 from ..factories.reranking.rerankerFactory import RerankerFactory
+from ..factories.hallucination.hallucinationCheckerFactory import HallucinationCheckerFactory
 from ..factories.chains.safe_chain import SafeRetrievalQA
+from ..factories.chains.reranking_retriever import RerankingRetriever
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -53,7 +55,19 @@ def build_qa_system(config: RAGConfig, documents: Optional[list]):
     
     # Create vectorstore
     vector = VectorStoreFactory.create(config=config.vector_store).create(embedder=embedder, documents=documents, save_if_not_local=config.vector_store.save_if_not_local)
-    retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
+
+    if config.reranking.enabled:
+        # Over-fetch from the vector store, then rerank down to the real
+        # top_k -- reranking can only reorder what it's given.
+        final_k = config.reranking.top_k or config.vector_store.top_k
+        fetch_k = final_k * (config.reranking.fetch_multiplier or 1)
+        base_retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": fetch_k})
+        reranker = RerankerFactory.create(config.reranking)
+        retriever = RerankingRetriever(
+            base_retriever=base_retriever, reranker=reranker, top_k=final_k, fetch_k=fetch_k
+        )
+    else:
+        retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": config.vector_store.top_k})
 
     # Create LLM
     llm = LLMFactory.create(config.llm).create()
@@ -92,7 +106,19 @@ def build_qa_system(config: RAGConfig, documents: Optional[list]):
         verbose=config.debug,
     )
 
-    return SafeRetrievalQA(qa)
+    hallucination_checker = None
+    if config.hallucination_checker.enabled:
+        try:
+            hallucination_checker = HallucinationCheckerFactory.create(
+                config.hallucination_checker, embedder=embedder
+            )
+        except NotImplementedError as e:
+            import logging
+            logging.getLogger("build_qa_system").warning(
+                f"hallucination_checker.enabled is true but not usable: {e}"
+            )
+
+    return SafeRetrievalQA(qa, hallucination_checker=hallucination_checker)
 
 
 def retrieve_raw(config: RAGConfig, query: str, top_k: Optional[int] = None) -> list[dict]:
