@@ -1,11 +1,17 @@
 class SafeRetrievalQA:
-    def __init__(self, qa_chain, default_answer="I don't know"):
+    def __init__(self, qa_chain, default_answer="I don't know", hallucination_checker=None):
         self.qa_chain = qa_chain
         self.default_answer = default_answer
+        self.hallucination_checker = hallucination_checker
 
     def __call__(self, query: str):
         try:
-            return self.qa_chain(query)
+            result = self.qa_chain(query)
+            if self.hallucination_checker is not None:
+                result["hallucination_check"] = self.hallucination_checker.check(
+                    result.get("result", ""), result.get("source_documents") or []
+                )
+            return result
         except Exception as e:
             # The exception could come from either the retriever or the LLM
             # combine step -- most commonly the latter (bad/missing API key,

@@ -67,6 +67,13 @@ def print_result(res: dict):
             print("No chunks were retrieved either.\n")
     else:
         print(f"Answer: {res['result']}\n")
+        check = res.get("hallucination_check")
+        if check and check.get("is_hallucination"):
+            print(
+                f"Warning: this answer's similarity to the retrieved context "
+                f"({check['score']:.3f}) is below the configured threshold -- "
+                f"it may not be grounded in the retrieved documents.\n"
+            )
 
 def get_qa_object(config_path: Path, docs_path: str | None = None):
     config: RAGConfig = load_config(config_path)
